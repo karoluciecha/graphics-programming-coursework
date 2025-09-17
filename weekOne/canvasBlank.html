@@ -77,6 +77,16 @@
     ctx.closePath();
     ctx.stroke();
 
+    ctx.beginPath();
+    ctx.arc(60, 400, 50, (11 * Math.PI) / 6, (1 * Math.PI) / 6, true);
+  
+    ctx.moveTo(60, 400);
+    ctx.lineTo(50 * Math.cos(11 / 6 * Math.PI) + 60, 50 * Math.sin((1 * Math.PI) / 6) + 400);
+
+    ctx.moveTo(60, 400);
+    ctx.lineTo(50 * Math.cos(1 / 6 * Math.PI) + 60, 50 * Math.sin((11 * Math.PI) / 6) + 400);
+    ctx.stroke();
+
     </script>
 
   </body>
