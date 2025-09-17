@@ -41,12 +41,16 @@
     ctx.lineTo(240,270);
     ctx.lineTo(160,270);
     ctx.closePath();
+    ctx.fillStyle = "rgba(200, 0, 175, 0.25)";
+    ctx.fill();
     ctx.stroke();
 		
     ctx.beginPath();
     ctx.lineWidth = "33";
     ctx.strokeStyle = "rgba(100, 200, 200 , 0.5)";
     ctx.arc(150, 150, 40, 0, 2 * Math.PI);
+    ctx.fillStyle = "rgba(255, 150, 0, 0.75)";
+    ctx.fill();
     ctx.stroke();
 
     ctx.beginPath();
@@ -55,6 +59,10 @@
     ctx.arc(300, 150, 40, 0, 2 * Math.PI);
     ctx.stroke();
 
+    ctx.beginPath();
+    ctx.arc(300, 150, 30, 0, 2 * Math.PI);
+    ctx.fillStyle = "rgba(255, 165, 0, 0.5)";
+    ctx.fill();
     </script>
 
   </body>
