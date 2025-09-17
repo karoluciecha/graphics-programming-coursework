@@ -63,6 +63,20 @@
     ctx.arc(300, 150, 30, 0, 2 * Math.PI);
     ctx.fillStyle = "rgba(255, 165, 0, 0.5)";
     ctx.fill();
+
+    ctx.beginPath();
+    ctx.lineWidth = "1";
+    ctx.strokeStyle = "black";
+    ctx.rect(300, 300, 150, 150);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(375, 300);
+    ctx.lineTo(450,375);
+    ctx.lineTo(300,375);
+    ctx.closePath();
+    ctx.stroke();
+
     </script>
 
   </body>
