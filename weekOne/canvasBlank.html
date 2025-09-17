@@ -33,17 +33,28 @@
     ctx.strokeStyle = "rgba(0, 0, 255, 0.4)";
     ctx.rect(148, 148, 154, 104);
     ctx.stroke();
-    ctx.closePath();
 		
     ctx.beginPath();
     ctx.lineWidth = "5";
     ctx.strokeStyle = "rgba(0, 255, 0 , 0.4)";
-	  ctx.moveTo(198,200);
+	  ctx.moveTo(200,200);
     ctx.lineTo(240,270);
     ctx.lineTo(160,270);
-    ctx.lineTo(200,200);
+    ctx.closePath();
     ctx.stroke();
 		
+    ctx.beginPath();
+    ctx.lineWidth = "33";
+    ctx.strokeStyle = "rgba(100, 200, 200 , 0.5)";
+    ctx.arc(150, 150, 40, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.lineWidth = "22";
+    ctx.strokeStyle = "rgba(100, 0, 150 , 0.7)";
+    ctx.arc(300, 150, 40, 0, 2 * Math.PI);
+    ctx.stroke();
+
     </script>
 
   </body>
