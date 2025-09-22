@@ -7,6 +7,7 @@
     <title>Canvas</title>
 
     <style type="text/css">
+		<!-- Adding border to the canvas -->
       canvas {
         border: 1px solid black;
       }
@@ -16,24 +17,31 @@
 
   <body>
 
+	  <!-- Changing canvas size -->
     <canvas id="canvasOne" width="500px" height="500px"></canvas>
 
     <script type="text/javascript">
+
+		// Defining canvas and pen variables
     const canvas = document.getElementById("canvasOne");
     const ctx = canvas.getContext("2d");
 
+		// Adding name to the canvas
     ctx.font = "50px Comic Sans MS";
     ctx.fillText("Karol Uciecha",10,80);
 
+		// Adding filled rectangle to the canvas
     ctx.fillStyle = "red";
     ctx.fillRect(150, 150, 150, 100);
 
+		// Adding empty rectangle to the canvas
     ctx.beginPath();
     ctx.lineWidth = "6";
     ctx.strokeStyle = "rgba(0, 0, 255, 0.4)";
     ctx.rect(148, 148, 154, 104);
     ctx.stroke();
-		
+
+		// Adding triangle to the canvas
     ctx.beginPath();
     ctx.lineWidth = "5";
     ctx.strokeStyle = "rgba(0, 255, 0 , 0.4)";
@@ -44,10 +52,12 @@
     ctx.fillStyle = "rgba(200, 0, 175, 0.25)";
     ctx.fill();
     ctx.stroke();
-		
+
+		// Adding circles to the canvas
     ctx.beginPath();
     ctx.lineWidth = "33";
     ctx.strokeStyle = "rgba(100, 200, 200 , 0.5)";
+		// ctx.arc(positionX, positionY, radius, start angle, end angle, (false/true) draw directrion);
     ctx.arc(150, 150, 40, 0, 2 * Math.PI);
     ctx.fillStyle = "rgba(255, 150, 0, 0.75)";
     ctx.fill();
@@ -64,6 +74,7 @@
     ctx.fillStyle = "rgba(255, 165, 0, 0.5)";
     ctx.fill();
 
+    // Adding triangle in a rectangle to the canvas
     ctx.beginPath();
     ctx.lineWidth = "1";
     ctx.strokeStyle = "black";
@@ -77,6 +88,7 @@
     ctx.closePath();
     ctx.stroke();
 
+    // Adding pacman facing right to the canvas
     ctx.beginPath();
     ctx.arc(60, 400, 50, (11 * Math.PI) / 6, (1 * Math.PI) / 6, true);
   
@@ -85,6 +97,17 @@
 
     ctx.moveTo(60, 400);
     ctx.lineTo(50 * Math.cos(1 / 6 * Math.PI) + 60, 50 * Math.sin((11 * Math.PI) / 6) + 400);
+    ctx.stroke();
+
+    // Adding pacman facing upwards to the canvas
+    ctx.beginPath();
+    ctx.arc(160, 400, 50, (7 * Math.PI) / 4, (5 * Math.PI) / 4, false);
+  
+    ctx.moveTo(160, 400);
+    ctx.lineTo(50 * Math.cos(5 / 4 * Math.PI) + 160, 50 * Math.sin((5 * Math.PI) / 4) + 400);
+
+    ctx.moveTo(160, 400);
+    ctx.lineTo(50 * Math.cos(7 / 4 * Math.PI) + 160, 50 * Math.sin((7 * Math.PI) / 4) + 400);
     ctx.stroke();
 
     </script>
