@@ -39,8 +39,11 @@
       let ballY = 10;
       let ballX = 50;
       let ballR = 5;
-      let ballYSpeed = 5;
+      let ballYSpeed = 10;
       let ballXSpeed = 1;
+      let ballYBounceSpeed = -0.9;
+      let ballXBounceSpeed = -1;
+
 
       // A function to repeat every time the animation loops.
       function repeatme() {
@@ -53,12 +56,22 @@
         
         // Update the y location.
         ballY += ballYSpeed;
+        ballX += ballXSpeed;
 
         if (ballY >= canvasWidth - ballR) {
-          ballYSpeed = ballYSpeed * -1;
+          // Added so when the ball slows down doesn't get stuck on the edge
+          ballY = canvasWidth - ballR;
+          ballYSpeed = ballYSpeed * ballYBounceSpeed;
         }
         else if (ballY <= 0 + ballR) {
-          ballYSpeed = ballYSpeed * -1;
+          // Added so when the ball slows down doesn't get stuck on the edge
+          ballY = 0 + ballR;
+          ballYSpeed = ballYSpeed * ballYBounceSpeed;
+        }
+        else if (ballX >= canvasWidth - ballR) {
+          // Added so when the ball slows down doesn't get stuck on the edge
+          ballX = canvasWidth - ballR;
+          ballXSpeed = ballXSpeed * ballXBounceSpeed;
         }
 
         window.requestAnimationFrame(repeatme);
