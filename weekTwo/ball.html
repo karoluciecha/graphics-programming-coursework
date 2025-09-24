@@ -25,67 +25,150 @@
 
   <body>
     <h1>Karol Uciecha: G00436758</h1>
-    <canvas id="canvas-for-ball" width="500" height="500"></canvas>
-
+    <canvas id="canvas" width="500" height="500"></canvas>
     <script type="text/javascript">
-      canvasHeight = 500;
-      canvasWidth = 500;
-      // Gets a handle to the element with id canvasOne.
-      let canvas = document.getElementById("canvas-for-ball");
-      // Get a 2D context for the canvas.
-      let ctx = canvas.getContext("2d");
+      // canvasHeight = 500;
+      // canvasWidth = 500;
+      // // Gets a handle to the element with id canvasOne.
+      // let canvas = document.getElementById("canvas-for-ball");
+      // // Get a 2D context for the canvas.
+      // let ctx = canvas.getContext("2d");
       
-      // The properties of the ball.
-      let ballY = 10;
-      let ballX = 50;
-      let ballR = 5;
-      let ballYSpeed = 10;
-      let ballXSpeed = 5;
-      let ballYBounceSpeed = -0.9;
-      let ballXBounceSpeed = -1;
+      // // The properties of the ball.
+      // let ballY = 10;
+      // let ballX = 50;
+      // let ballR = 5;
+      // let ballYSpeed = 10;
+      // let ballXSpeed = 5;
+      // let ballYBounceSpeed = -0.9;
+      // let ballXBounceSpeed = -1;
 
 
-      // A function to repeat every time the animation loops.
-      function repeatme() {
-        ctx.clearRect(0, 0, canvasHeight, canvasWidth);
+      // // A function to repeat every time the animation loops.
+      // function repeatme() {
+      //   ctx.clearRect(0, 0, canvasHeight, canvasWidth);
 
-        // Draw the ball (stroked, not filled).
-        ctx.beginPath();
-        ctx.arc(ballX, ballY, ballR, 0, 2 * Math.PI);
-        ctx.stroke();
+      //   // Draw the ball (stroked, not filled).
+      //   ctx.beginPath();
+      //   ctx.arc(ballX, ballY, ballR, 0, 2 * Math.PI);
+      //   ctx.stroke();
         
-        // Update the y location.
-        ballY += ballYSpeed;
-        ballX += ballXSpeed;
+      //   // Update the y location.
+      //   ballY += ballYSpeed;
+      //   ballX += ballXSpeed;
 
-        if (ballY >= canvasWidth - ballR) {
-          // Added so when the ball slows down doesn't get stuck on the edge
-          ballY = canvasWidth - ballR;
-          ballYSpeed = ballYSpeed * ballYBounceSpeed;
-        }
-        else if (ballY <= 0 + ballR) {
-          // Added so when the ball slows down doesn't get stuck on the edge
-          ballY = 0 + ballR;
-          ballYSpeed = ballYSpeed * ballYBounceSpeed;
-        }
-        else if (ballX >= canvasWidth - ballR) {
-          // Added so when the ball slows down doesn't get stuck on the edge
-          ballX = canvasWidth - ballR;
-          ballXSpeed = ballXSpeed * ballXBounceSpeed;
-        }
-        else if (ballX <= 0 +ballR) {
-           // Added so when the ball slows down doesn't get stuck on the edge
-          ballX = 0 + ballR;
-          ballXSpeed = ballXSpeed * ballXBounceSpeed;
+      //   if (ballY >= canvasWidth - ballR) {
+      //     // Added so when the ball slows down doesn't get stuck on the edge
+      //     ballY = canvasWidth - ballR;
+      //     ballYSpeed = ballYSpeed * ballYBounceSpeed;
+      //   }
+      //   else if (ballY <= 0 + ballR) {
+      //     // Added so when the ball slows down doesn't get stuck on the edge
+      //     ballY = 0 + ballR;
+      //     ballYSpeed = ballYSpeed * ballYBounceSpeed;
+      //   }
+      //   else if (ballX >= canvasWidth - ballR) {
+      //     // Added so when the ball slows down doesn't get stuck on the edge
+      //     ballX = canvasWidth - ballR;
+      //     ballXSpeed = ballXSpeed * ballXBounceSpeed;
+      //   }
+      //   else if (ballX <= 0 +ballR) {
+      //      // Added so when the ball slows down doesn't get stuck on the edge
+      //     ballX = 0 + ballR;
+      //     ballXSpeed = ballXSpeed * ballXBounceSpeed;
 
+      //   }
+
+      //   window.requestAnimationFrame(repeatme);
+      // }
+      
+      // // Get the animation going.
+      // repeatme();
+
+
+
+      // Canvas properties (size)
+      const canvasHeight = 500;
+      const canvasWidth = 500;
+      let canvas = document.getElementById("canvas");
+      let ctx = canvas.getContext("2d");
+
+      // Ball properties
+      class Ball {
+        constructor(xPosition, yPosition, radius, xSpeed, ySpeed, xBounceSpeed, yBounceSpeed) {
+          this.xPosition = xPosition;
+          this.yPosition = yPosition;
+          this.radius = radius;
+          this.xSpeed = xSpeed;
+          this.ySpeed = ySpeed;
+          this.xBounceSpeed = xBounceSpeed;
+          this.yBounceSpeed = yBounceSpeed;
         }
+
+        // Function to draw the circle on the canvas
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
+          ctx.stroke();
+        }
+
+        // Function to change ball position on the canvas
+        move() {
+          this.xPosition += this.xSpeed;
+          this.yPosition += this.ySpeed;
+
+          // Bounce off bottom edge
+          if (this.yPosition >= canvasHeight - this.radius) {
+            // Resizing ball randomly
+            ball.resize();
+            // Prevent ball being stuck slightly out of canvas
+            this.yPosition = canvasHeight - this.radius;
+            // Reverse the direction
+            this.ySpeed *= this.yBounceSpeed;
+          }
+
+          // Bounce off the top edge
+          if (this.yPosition <= this.radius) {
+            ball.resize();
+            this.yPosition = this.radius;
+            this.ySpeed *= this.yBounceSpeed;
+          }
+
+          // Bounce off right edge
+          if (this.xPosition >= canvasWidth - this.radius) {
+            ball.resize();
+            this.xPosition = canvasWidth - this.radius;
+            this.xSpeed *= this.xBounceSpeed;
+            
+          }
+          
+          // Bounce off the left edge
+          if (this.xPosition <= this.radius) {
+            ball.resize();
+            this.xPosition = this.radius;
+            this.xSpeed *= this.xBounceSpeed;
+          }
+        }
+
+        resize() {
+          this.radius = Math.floor(Math.random() * 50);
+        }
+      }
+
+      // Create a new Ball instance
+      const ball = new Ball(50, 10, 5, 5, 10, -1 * Math.random(), -1 * Math.random(), Math.random());
+
+      function repeatme() {
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        ball.draw();
+        ball.move();
 
         window.requestAnimationFrame(repeatme);
       }
-      
-      // Get the animation going.
+
       repeatme();
-    </script>
+  </script>
 
   </body>
 
