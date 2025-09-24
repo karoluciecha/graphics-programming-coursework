@@ -40,7 +40,7 @@
       let ballX = 50;
       let ballR = 5;
       let ballYSpeed = 10;
-      let ballXSpeed = 1;
+      let ballXSpeed = 5;
       let ballYBounceSpeed = -0.9;
       let ballXBounceSpeed = -1;
 
@@ -72,6 +72,12 @@
           // Added so when the ball slows down doesn't get stuck on the edge
           ballX = canvasWidth - ballR;
           ballXSpeed = ballXSpeed * ballXBounceSpeed;
+        }
+        else if (ballX <= 0 +ballR) {
+           // Added so when the ball slows down doesn't get stuck on the edge
+          ballX = 0 + ballR;
+          ballXSpeed = ballXSpeed * ballXBounceSpeed;
+
         }
 
         window.requestAnimationFrame(repeatme);
