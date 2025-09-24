@@ -15,7 +15,7 @@
       canvas {
         border: 1px solid black;
       }
-      
+
       h1 {
         text-align: center;
       }
@@ -28,23 +28,36 @@
     <canvas id="canvas-for-ball" width="500" height="500"></canvas>
 
     <script type="text/javascript">
+      canvasHeight = 500;
+      canvasWidth = 500;
       // Gets a handle to the element with id canvasOne.
-      var canvas = document.getElementById("canvas-for-ball");
+      let canvas = document.getElementById("canvas-for-ball");
       // Get a 2D context for the canvas.
-      var ctx = canvas.getContext("2d");
+      let ctx = canvas.getContext("2d");
       
-      // The vertical location of the ball.
-      var y = 10;
+      // The properties of the ball.
+      let ballY = 10;
+      let ballX = 50;
+      let ballR = 5;
+      let ballYSpeed = 5;
+      let ballXSpeed = 1;
+
       // A function to repeat every time the animation loops.
       function repeatme() {
+        ctx.clearRect(0, 0, canvasHeight, canvasWidth);
+
         // Draw the ball (stroked, not filled).
         ctx.beginPath();
-        ctx.arc(50, y, 3, 0, 2 * Math.PI);
+        ctx.arc(ballX, ballY, ballR, 0, 2 * Math.PI);
         ctx.stroke();
         
         // Update the y location.
-        y += 1;
-        
+        ballY += ballYSpeed;
+
+        if (ballY >= canvasWidth - ballR) {
+          ballYSpeed = ballYSpeed * -1;
+        }
+
         window.requestAnimationFrame(repeatme);
       }
       
