@@ -57,6 +57,9 @@
         if (ballY >= canvasWidth - ballR) {
           ballYSpeed = ballYSpeed * -1;
         }
+        else if (ballY <= 0 + ballR) {
+          ballYSpeed = ballYSpeed * -1;
+        }
 
         window.requestAnimationFrame(repeatme);
       }
