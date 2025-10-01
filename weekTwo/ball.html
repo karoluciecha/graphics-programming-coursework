@@ -147,15 +147,17 @@
         // Function to randomly resize ball
         resize() {
           this.radius = 5 + Math.floor(Math.random() * 45);
+          this.radius = 5 + Math.floor(Math.random() * 45);
         }
       }
 
       // PacMan properties
       class PacMan {
-        constructor(xPosition, yPosition, radius, rotation, xSpeed, ySpeed, xBounceSpeed = 1, yBounceSpeed = 1, rotationSpeed = 1) {
+        constructor(xPosition, yPosition, radius, rotation, rotation, xSpeed, ySpeed, xBounceSpeed = 1, yBounceSpeed = 1, rotationSpeed = 1) {
           this.xPosition = xPosition;
           this.yPosition = yPosition;
           this.radius = radius;
+          this.rotation = rotation;
           this.rotation = rotation;
           this.xSpeed = xSpeed;
           this.ySpeed = ySpeed;
@@ -176,8 +178,14 @@
           ctx.lineTo(
           (this.radius * Math.cos((11 / 6 * Math.PI) - this.rotation)) + this.xPosition,
           (this.radius * Math.sin(((11 * Math.PI) / 6) - this.rotation)) + this.yPosition);
+          ctx.lineTo(
+          (this.radius * Math.cos((11 / 6 * Math.PI) - this.rotation)) + this.xPosition,
+          (this.radius * Math.sin(((11 * Math.PI) / 6) - this.rotation)) + this.yPosition);
 
           ctx.moveTo(this.xPosition, this.yPosition);
+          ctx.lineTo(
+            this.radius * Math.cos((1 / 6 * Math.PI) - this.rotation) + this.xPosition,
+            this.radius * Math.sin(((1 * Math.PI) / 6) - this.rotation) + this.yPosition);
           ctx.lineTo(
             this.radius * Math.cos((1 / 6 * Math.PI) - this.rotation) + this.xPosition,
             this.radius * Math.sin(((1 * Math.PI) / 6) - this.rotation) + this.yPosition);
@@ -193,6 +201,7 @@
           // Bounce off bottom edge
           if (this.yPosition >= canvasHeight - this.radius) {
             // Resize and rotate ball randomly
+            // Resize and rotate ball randomly
             pacman.resize();
 
             // Prevent ball being stuck slightly out of canvas
@@ -207,6 +216,7 @@
           // Bounce off the top edge
           if (this.yPosition <= this.radius) {
             pacman.resize();
+            pacman.rotate();
             this.yPosition = this.radius;
             this.ySpeed *= this.yBounceSpeed;
             this.rotationSpeed *= -1;
@@ -215,6 +225,8 @@
           // Bounce off right edge
           if (this.xPosition >= canvasWidth - this.radius) {
             pacman.resize();
+            pacman.rotate();
+
             this.xPosition = canvasWidth - this.radius;
             this.xSpeed *= this.xBounceSpeed;
             this.rotationSpeed *= -1;
@@ -224,6 +236,8 @@
           // Bounce off the left edge
           if (this.xPosition <= this.radius) {
             ball.resize();
+            pacman.rotate();
+
             this.xPosition = this.radius;
             this.xSpeed *= this.xBounceSpeed;
             this.rotationSpeed *= -1;
@@ -250,6 +264,7 @@
       const ball = new Ball(50, 10, 5, 5, 10, -1 * Math.random(), -1 * Math.random(), Math.random());
 
       // Create a new PacMan instance
+      const pacman = new PacMan(200, 200, 20, 0, 5, 10, -1 * Math.random(), -1 * Math.random(), Math.random());
       const pacman = new PacMan(200, 200, 20, 0, 5, 10, -1 * Math.random(), -1 * Math.random(), Math.random());
 
       function repeatme() {
