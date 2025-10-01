@@ -189,25 +189,34 @@
 
       // ---------------- PADDLE CLASS ----------------
       class Paddle {
-        constructor(width = 10, height = 150, wallOffset) {
-          this.width = width;
-          this.height = height;
-          this.xPosition = canvasWidth - wallOffset;
-          this.yPosition = (canvasHeight / 2) - (this.height / 2)
+        constructor(keyboardPaddle = false) {
+          this.wallOffset = 40;
+          this.width = 10;
+          this.height = 150;
+          if (keyboardPaddle) this.xPosition = canvasWidth - this.wallOffset;
+          else this.xPosition = this.wallOffset - this.width;
+          this.yPosition = (canvasHeight / 2) - (this.height / 2);
+          this.keyboardPaddle = keyboardPaddle;
         }
         
-        // Draw the ball
+        // Draw the paddle
         draw() {
           ctx.beginPath();
-          ctx.fillStyle = "red";
+          if (this.keyboardPaddle) ctx.fillStyle = "green";
+          else ctx.fillStyle = "red"
           ctx.fillRect(this.xPosition, this.yPosition, this.width, this.height);
-          console.log(canvasHeight);
           ctx.stroke();
         }
 
         keyboardMove(pixels, direction = false) {
-          if (direction) this.yPosition -= pixels;
-          else this.yPosition += pixels;
+          if (direction && this.keyboardPaddle) this.yPosition -= pixels;
+          else if (this.keyboardPaddle) this.yPosition += pixels;
+        }
+
+        mouseMove(pixels, mousePosition) 
+        {
+          if (this.yPosition > mousePosition) this.yPosition -= pixels;
+          else if ((this.yPosition + this.height) < mousePosition) this.yPosition += pixels;
         }
       }
 
@@ -217,7 +226,9 @@
       // ---------------- CREATE OBJECTS ----------------
       const ball = new Ball(50, 10, 5, 5, 10, -1 * Math.random(), -1 * Math.random());
       const pacman = new PacMan(200, 200, 20, 0, 5, 10, -1 * Math.random(), -1 * Math.random());
-      const paddleRight = new Paddle(10, 150, 40);
+      const paddleRight = new Paddle(true);
+      const paddleLeft = new Paddle(false);
+
 
       // ---------------- ANIMATION LOOP ----------------
       function repeatme() {
@@ -230,6 +241,7 @@
         ball.move();
         pacman.move();
         paddleRight.draw();
+        paddleLeft.draw();
 
         // Loop animation
         window.requestAnimationFrame(repeatme);
@@ -251,6 +263,12 @@
             break;
           }
         });
+
+        canvas.addEventListener("mousemove", function(event) {
+        // Locating the mouse click on the canvas
+        yPosition = event.clientY - canvas.offsetTop;
+        paddleLeft.mouseMove(5, yPosition);
+      });
 
       // Start animation
       repeatme();
