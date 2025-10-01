@@ -83,15 +83,13 @@
 
       // ---------------- PACMAN CLASS ----------------
       class PacMan {
-        constructor(xPosition, yPosition, radius, rotation, xSpeed, ySpeed, xBounceSpeed = 1, yBounceSpeed = 1, rotationSpeed = 1) {
+        constructor(xPosition, yPosition, radius, rotation, xSpeed, ySpeed, rotationSpeed = 1) {
           this.xPosition = xPosition;
           this.yPosition = yPosition;
           this.radius = radius;
           this.rotation = rotation; // mouth rotation
           this.xSpeed = xSpeed;
           this.ySpeed = ySpeed;
-          this.xBounceSpeed = xBounceSpeed;
-          this.yBounceSpeed = yBounceSpeed;
           this.rotationSpeed = rotationSpeed; // controls mouth rotation speed
         }
 
@@ -125,37 +123,52 @@
 
         // Move PacMan and check wall collisions
         move() {
+          const gravity = 0.5;
+          const friction = 0.99;
+          const rotationFriction = 0.99;
+
+          // Apply gravity, friction, and rotation friction
+          this.ySpeed += gravity;
+          this.xSpeed *= friction;
+          this.rotationSpeed *= rotationFriction;
+
           this.xPosition += this.xSpeed;
           this.yPosition += this.ySpeed;
-          this.rotate(); // keep rotating
 
           // Bounce bottom
           if (this.yPosition >= canvasHeight - this.radius) {
             this.yPosition = canvasHeight - this.radius;
-            this.ySpeed *= this.yBounceSpeed;
+            this.ySpeed *= -0.9;  // Lose energy, bounce to 90% height
             this.rotationSpeed *= -1; // flip rotation
           }
 
           // Bounce top
           if (this.yPosition <= this.radius) {
             this.yPosition = this.radius;
-            this.ySpeed *= this.yBounceSpeed;
+            this.ySpeed *= -0.9;
             this.rotationSpeed *= -1;
           }
 
           // Bounce right
           if (this.xPosition >= canvasWidth - this.radius) {
             this.xPosition = canvasWidth - this.radius;
-            this.xSpeed *= this.xBounceSpeed;
+            this.xSpeed *= -1;
             this.rotationSpeed *= -1;
           }
 
           // Bounce left
           if (this.xPosition <= this.radius) {
             this.xPosition = this.radius;
-            this.xSpeed *= this.xBounceSpeed;
+            this.xSpeed *= -1;
             this.rotationSpeed *= -1;
           }
+
+          // Stop very slow movements
+          if (Math.abs(this.xSpeed) < 0.01) this.xSpeed = 0;
+          if (Math.abs(this.ySpeed) < 0.01) this.ySpeed = 0;
+          if (Math.abs(this.rotationSpeed) < 0.01) this.rotationSpeed = 0;
+
+          this.rotate();
         }
 
         // Rotate PacMan
@@ -202,7 +215,7 @@
 
       // ---------------- CREATE OBJECTS ----------------
       const ball = new Ball(50, 10, 5, 5, 10, -1 * Math.random(), -1 * Math.random());
-      const pacman = new PacMan(200, 200, 30, 0, 5, 10, -1 * Math.random(), -1 * Math.random());
+      const pacman = new PacMan(200, 200, 30, 0, 5, 10, 5);
       const paddleRight = new Paddle(true);
       const paddleLeft = new Paddle(false);
 
