@@ -201,14 +201,19 @@
           ctx.stroke();
         }
 
+        // Move paddle with keyboard
         keyboardMove(pixels, direction = false) {
-          if (direction && this.keyboardPaddle) this.yPosition -= pixels;
-          else if (this.keyboardPaddle) this.yPosition += pixels;
+          if (direction && this.keyboardPaddle && (this.yPosition > 0)) this.yPosition -= pixels;
+          // Prevent paddle from going out of bounds
+          else if (direction == false && this.keyboardPaddle && (this.yPosition + this.height < canvasHeight)) this.yPosition += pixels;
         }
 
+        // Move paddle with mouse
         mouseMove(pixels, mousePosition) 
         {
+          // Move paddle towards mouse position
           if (this.yPosition > mousePosition) this.yPosition -= pixels;
+          // Prevent paddle from going out of bounds
           else if (((this.yPosition < this.height) < mousePosition) && this.yPosition + this.height < canvasWidth) this.yPosition += pixels;
         }
       }
