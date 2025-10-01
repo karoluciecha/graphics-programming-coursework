@@ -3,10 +3,9 @@
   <head>
     <meta charset="UTF-8">
     <title>Canvas</title>
-
     <style type="text/css">
       body {
-          background-color: white;
+        background-color: white;
       }
       
       canvas {
@@ -21,73 +20,17 @@
   <body>
     <h1>Karol Uciecha: G00436758</h1>
     <canvas id="canvas" width="500" height="500"></canvas>
+
     <script type="text/javascript">
-
-      // canvasHeight = 500;
-      // canvasWidth = 500;
-      // // Gets a handle to the element with id canvasOne.
-      // let canvas = document.getElementById("canvas-for-ball");
-      // // Get a 2D context for the canvas.
-      // let ctx = canvas.getContext("2d");
-      
-      // // The properties of the ball.
-      // let ballY = 10;
-      // let ballX = 50;
-      // let ballR = 5;
-      // let ballYSpeed = 10;
-      // let ballXSpeed = 5;
-      // let ballYBounceSpeed = -0.9;
-      // let ballXBounceSpeed = -1;
-
-
-      // // A function to repeat every time the animation loops.
-      // function repeatme() {
-      //   ctx.clearRect(0, 0, canvasHeight, canvasWidth);
-
-      //   // Draw the ball (stroked, not filled).
-      //   ctx.beginPath();
-      //   ctx.arc(ballX, ballY, ballR, 0, 2 * Math.PI);
-      //   ctx.stroke();
-        
-      //   // Update the y location.
-      //   ballY += ballYSpeed;
-      //   ballX += ballXSpeed;
-
-      //   if (ballY >= canvasWidth - ballR) {
-      //     // Added so when the ball slows down doesn't get stuck on the edge
-      //     ballY = canvasWidth - ballR;
-      //     ballYSpeed = ballYSpeed * ballYBounceSpeed;
-      //   }
-      //   else if (ballY <= 0 + ballR) {
-      //     // Added so when the ball slows down doesn't get stuck on the edge
-      //     ballY = 0 + ballR;
-      //     ballYSpeed = ballYSpeed * ballYBounceSpeed;
-      //   }
-      //   else if (ballX >= canvasWidth - ballR) {
-      //     // Added so when the ball slows down doesn't get stuck on the edge
-      //     ballX = canvasWidth - ballR;
-      //     ballXSpeed = ballXSpeed * ballXBounceSpeed;
-      //   }
-      //   else if (ballX <= 0 +ballR) {
-      //      // Added so when the ball slows down doesn't get stuck on the edge
-      //     ballX = 0 + ballR;
-      //     ballXSpeed = ballXSpeed * ballXBounceSpeed;
-
-      //   }
-
-      //   window.requestAnimationFrame(repeatme);
-      // }
-      
-      // // Get the animation going.
-      // repeatme();
-
-      // Canvas properties (size)
+      // Canvas dimensions
       const canvasHeight = 500;
       const canvasWidth = 500;
+
+      // Get canvas and drawing context
       let canvas = document.getElementById("canvas");
       let ctx = canvas.getContext("2d");
 
-      // Ball properties
+      // ---------------- BALL CLASS ----------------
       class Ball {
         constructor(xPosition, yPosition, radius, xSpeed, ySpeed, xBounceSpeed = 1, yBounceSpeed = 1) {
           this.xPosition = xPosition;
@@ -99,159 +42,142 @@
           this.yBounceSpeed = yBounceSpeed;
         }
 
-        // Function to draw the circle on the canvas
+        // Draw the ball (circle outline)
         draw() {
           ctx.beginPath();
           ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
           ctx.stroke();
         }
 
-        // Function to change ball position on the canvas
+        // Move the ball and check for wall collisions
         move() {
           this.xPosition += this.xSpeed;
           this.yPosition += this.ySpeed;
 
-          // Bounce off bottom edge
+          // Bounce off bottom
           if (this.yPosition >= canvasHeight - this.radius) {
-            // Resizing ball randomly
-            ball.resize();
-            // Prevent ball being stuck slightly out of canvas
+            this.resize(); // Random size on bounce
             this.yPosition = canvasHeight - this.radius;
-            // Reverse the direction
             this.ySpeed *= this.yBounceSpeed;
           }
 
-          // Bounce off the top edge
+          // Bounce off top
           if (this.yPosition <= this.radius) {
-            ball.resize();
+            this.resize();
             this.yPosition = this.radius;
             this.ySpeed *= this.yBounceSpeed;
           }
 
-          // Bounce off right edge
+          // Bounce off right
           if (this.xPosition >= canvasWidth - this.radius) {
-            ball.resize();
+            this.resize();
             this.xPosition = canvasWidth - this.radius;
             this.xSpeed *= this.xBounceSpeed;
-            
           }
-          
-          // Bounce off the left edge
+
+          // Bounce off left
           if (this.xPosition <= this.radius) {
-            ball.resize();
+            this.resize();
             this.xPosition = this.radius;
             this.xSpeed *= this.xBounceSpeed;
           }
         }
 
-        // Function to randomly resize ball
+        // Randomly resize ball radius
         resize() {
-          this.radius = 5 + Math.floor(Math.random() * 45);
           this.radius = 5 + Math.floor(Math.random() * 45);
         }
       }
 
-      // PacMan properties
+      // ---------------- PACMAN CLASS ----------------
       class PacMan {
-        constructor(xPosition, yPosition, radius, rotation, rotation, xSpeed, ySpeed, xBounceSpeed = 1, yBounceSpeed = 1, rotationSpeed = 1) {
+        constructor(xPosition, yPosition, radius, rotation, xSpeed, ySpeed, xBounceSpeed = 1, yBounceSpeed = 1, rotationSpeed = 1) {
           this.xPosition = xPosition;
           this.yPosition = yPosition;
           this.radius = radius;
-          this.rotation = rotation;
-          this.rotation = rotation;
+          this.rotation = rotation; // mouth rotation
           this.xSpeed = xSpeed;
           this.ySpeed = ySpeed;
           this.xBounceSpeed = xBounceSpeed;
           this.yBounceSpeed = yBounceSpeed;
-          this.rotationSpeed = rotationSpeed;
+          this.rotationSpeed = rotationSpeed; // controls mouth rotation speed
         }
 
-        // Function to draw the PacMan on the canvas
+        // Draw PacMan with open mouth
         draw() {
           ctx.beginPath();
-          // Draw the body
-          // Draw from 11/6 PI to 1/6 PI to create the mouth opening
-          // Subtract rotation to rotate the PacMan
           ctx.arc(
-            this.xPosition, this.yPosition, this.radius, ((11 * Math.PI) / 6) - this.rotation, ((1 * Math.PI) / 6) - this.rotation, true);
+            this.xPosition,
+            this.yPosition,
+            this.radius,
+            ((11 * Math.PI) / 6) - this.rotation, // mouth start
+            ((1 * Math.PI) / 6) - this.rotation,  // mouth end
+            true
+          );
+
+          // Draw mouth (two lines)
           ctx.moveTo(this.xPosition, this.yPosition);
           ctx.lineTo(
-          (this.radius * Math.cos((11 / 6 * Math.PI) - this.rotation)) + this.xPosition,
-          (this.radius * Math.sin(((11 * Math.PI) / 6) - this.rotation)) + this.yPosition);
-          ctx.lineTo(
-          (this.radius * Math.cos((11 / 6 * Math.PI) - this.rotation)) + this.xPosition,
-          (this.radius * Math.sin(((11 * Math.PI) / 6) - this.rotation)) + this.yPosition);
+            this.radius * Math.cos((11 / 6 * Math.PI) - this.rotation) + this.xPosition,
+            this.radius * Math.sin((11 / 6 * Math.PI) - this.rotation) + this.yPosition
+          );
 
           ctx.moveTo(this.xPosition, this.yPosition);
           ctx.lineTo(
             this.radius * Math.cos((1 / 6 * Math.PI) - this.rotation) + this.xPosition,
-            this.radius * Math.sin(((1 * Math.PI) / 6) - this.rotation) + this.yPosition);
-          ctx.lineTo(
-            this.radius * Math.cos((1 / 6 * Math.PI) - this.rotation) + this.xPosition,
-            this.radius * Math.sin(((1 * Math.PI) / 6) - this.rotation) + this.yPosition);
+            this.radius * Math.sin((1 / 6 * Math.PI) - this.rotation) + this.yPosition
+          );
+
           ctx.stroke();
         }
 
-        // Function to change ball position on the canvas
+        // Move PacMan and check wall collisions
         move() {
           this.xPosition += this.xSpeed;
           this.yPosition += this.ySpeed;
-          this.rotate();
+          this.rotate(); // keep rotating
 
-          // Bounce off bottom edge
+          // Bounce bottom
           if (this.yPosition >= canvasHeight - this.radius) {
-            // Resize and rotate ball randomly
-            // Resize and rotate ball randomly
-            pacman.resize();
-
-            // Prevent ball being stuck slightly out of canvas
+            this.resize();
             this.yPosition = canvasHeight - this.radius;
-            // Reverse the direction
             this.ySpeed *= this.yBounceSpeed;
-            // Reverse rotation
-            this.rotationSpeed *= -1;
-
+            this.rotationSpeed *= -1; // flip rotation
           }
 
-          // Bounce off the top edge
+          // Bounce top
           if (this.yPosition <= this.radius) {
-            pacman.resize();
-            pacman.rotate();
+            this.resize();
             this.yPosition = this.radius;
             this.ySpeed *= this.yBounceSpeed;
             this.rotationSpeed *= -1;
           }
 
-          // Bounce off right edge
+          // Bounce right
           if (this.xPosition >= canvasWidth - this.radius) {
-            pacman.resize();
-            pacman.rotate();
-
+            this.resize();
             this.xPosition = canvasWidth - this.radius;
             this.xSpeed *= this.xBounceSpeed;
             this.rotationSpeed *= -1;
-            
           }
-          
-          // Bounce off the left edge
-          if (this.xPosition <= this.radius) {
-            ball.resize();
-            pacman.rotate();
 
+          // Bounce left
+          if (this.xPosition <= this.radius) {
+            this.resize();
             this.xPosition = this.radius;
             this.xSpeed *= this.xBounceSpeed;
             this.rotationSpeed *= -1;
           }
         }
 
-        // Function to randomly resize ball
+        // Random resize
         resize() {
-        this.radius = 5 + Math.floor(Math.random() * 45);
+          this.radius = 5 + Math.floor(Math.random() * 45);
         }
 
-        // Function to randomly rotate PacMan
+        // Rotate PacMan mouth
         rotate() {
-          this.rotation += this.rotationSpeed;
+          this.rotation += this.rotationSpeed * 0.05; // smoother rotation
           if (this.rotation > Math.PI * 2) {
             this.rotation -= Math.PI * 2;
           } else if (this.rotation < 0) {
@@ -260,27 +186,27 @@
         }
       }
 
-      // Create a new Ball instance
-      const ball = new Ball(50, 10, 5, 5, 10, -1 * Math.random(), -1 * Math.random(), Math.random());
+      // ---------------- CREATE OBJECTS ----------------
+      const ball = new Ball(50, 10, 5, 5, 10, -1 * Math.random(), -1 * Math.random());
+      const pacman = new PacMan(200, 200, 20, 0, 5, 10, -1 * Math.random(), -1 * Math.random());
 
-      // Create a new PacMan instance
-      const pacman = new PacMan(200, 200, 20, 0, 5, 10, -1 * Math.random(), -1 * Math.random(), Math.random());
-      const pacman = new PacMan(200, 200, 20, 0, 5, 10, -1 * Math.random(), -1 * Math.random(), Math.random());
-
+      // ---------------- ANIMATION LOOP ----------------
       function repeatme() {
+        // Clear screen
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
+        // Draw + Move objects
         ball.draw();
         pacman.draw();
         ball.move();
         pacman.move();
 
+        // Loop animation
         window.requestAnimationFrame(repeatme);
       }
 
+      // Start animation
       repeatme();
-  </script>
-
+    </script>
   </body>
-
 </html>
