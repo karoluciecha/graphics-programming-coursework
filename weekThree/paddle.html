@@ -57,36 +57,27 @@
 
           // Bounce off bottom
           if (this.yPosition >= canvasHeight - this.radius) {
-            this.resize(); // Random size on bounce
             this.yPosition = canvasHeight - this.radius;
             this.ySpeed *= this.yBounceSpeed;
           }
 
           // Bounce off top
           if (this.yPosition <= this.radius) {
-            this.resize();
             this.yPosition = this.radius;
             this.ySpeed *= this.yBounceSpeed;
           }
 
           // Bounce off right
           if (this.xPosition >= canvasWidth - this.radius) {
-            this.resize();
             this.xPosition = canvasWidth - this.radius;
             this.xSpeed *= this.xBounceSpeed;
           }
 
           // Bounce off left
           if (this.xPosition <= this.radius) {
-            this.resize();
             this.xPosition = this.radius;
             this.xSpeed *= this.xBounceSpeed;
           }
-        }
-
-        // Randomly resize ball radius
-        resize() {
-          this.radius = 5 + Math.floor(Math.random() * 45);
         }
       }
 
@@ -140,7 +131,6 @@
 
           // Bounce bottom
           if (this.yPosition >= canvasHeight - this.radius) {
-            this.resize();
             this.yPosition = canvasHeight - this.radius;
             this.ySpeed *= this.yBounceSpeed;
             this.rotationSpeed *= -1; // flip rotation
@@ -148,7 +138,6 @@
 
           // Bounce top
           if (this.yPosition <= this.radius) {
-            this.resize();
             this.yPosition = this.radius;
             this.ySpeed *= this.yBounceSpeed;
             this.rotationSpeed *= -1;
@@ -156,7 +145,6 @@
 
           // Bounce right
           if (this.xPosition >= canvasWidth - this.radius) {
-            this.resize();
             this.xPosition = canvasWidth - this.radius;
             this.xSpeed *= this.xBounceSpeed;
             this.rotationSpeed *= -1;
@@ -164,28 +152,20 @@
 
           // Bounce left
           if (this.xPosition <= this.radius) {
-            this.resize();
             this.xPosition = this.radius;
             this.xSpeed *= this.xBounceSpeed;
             this.rotationSpeed *= -1;
           }
         }
 
-        // Random resize
-        resize() {
-          this.radius = 5 + Math.floor(Math.random() * 45);
-        }
-
-        // Rotate PacMan mouth
-        rotate() {
-          this.rotation += this.rotationSpeed * 0.05; // smoother rotation
-          if (this.rotation > Math.PI * 2) {
-            this.rotation -= Math.PI * 2;
-          } else if (this.rotation < 0) {
-            this.rotation += Math.PI * 2;
-          }
-        }
+        // Rotate PacMan
+        rotate(acceleration = 0) {
+          if (acceleration > 0) this.rotationSpeed *= 1.1;
+          else if (acceleration < 0) this.rotationSpeed *= 0.9;
+          
+          this.rotation += this.rotationSpeed * 0.05;
       }
+    }
 
       // ---------------- PADDLE CLASS ----------------
       class Paddle {
@@ -216,16 +196,13 @@
         mouseMove(pixels, mousePosition) 
         {
           if (this.yPosition > mousePosition) this.yPosition -= pixels;
-          else if ((this.yPosition + this.height) < mousePosition) this.yPosition += pixels;
+          else if (((this.yPosition < this.height) < mousePosition) && this.yPosition + this.height < canvasWidth) this.yPosition += pixels;
         }
       }
 
-
-
-
       // ---------------- CREATE OBJECTS ----------------
       const ball = new Ball(50, 10, 5, 5, 10, -1 * Math.random(), -1 * Math.random());
-      const pacman = new PacMan(200, 200, 20, 0, 5, 10, -1 * Math.random(), -1 * Math.random());
+      const pacman = new PacMan(200, 200, 30, 0, 5, 10, -1 * Math.random(), -1 * Math.random());
       const paddleRight = new Paddle(true);
       const paddleLeft = new Paddle(false);
 
@@ -251,15 +228,21 @@
 		  $(document.body).on('keydown', function(e) {
         console.log(e.which);
         switch (e.which) {
+          // key code for O (minus rotation speed)
+          case 79:
+            pacman.rotate(-1);
+            break;
+          // key code for P (plus rotation speed)
+          case 80:
+            pacman.rotate(1);
+            break;
           // key code for up arrow
           case 38:
             paddleRight.keyboardMove(5, true);
-            console.log('up arrow key pressed!');
             break;
             // key code for down arrow
           case 40:
             paddleRight.keyboardMove(5, false);
-            console.log('down arrow key pressed!');
             break;
           }
         });
