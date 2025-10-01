@@ -30,12 +30,14 @@
       ctx.fillStyle = "rgb(255, 0, 0)";
       
       canvas.addEventListener("click", function(event) {
+        xPosition = event.clientX;
+        yPosition = event.clientY;
         ctx.beginPath();
         ctx.arc(50, 50, 6, 0, 2 * Math.PI);
         ctx.fill();
         
         noClicks += 1;
-        console.log(noClicks);
+        console.log(xPosition, yPosition);
       });
     </script>
 
