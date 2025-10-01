@@ -30,12 +30,13 @@
       ctx.fillStyle = "rgb(255, 0, 0)";
       
       canvas.addEventListener("click", function(event) {
+        // Locating the mouse click on the canvas
         xPosition = event.clientX - canvas.offsetLeft;
         yPosition = event.clientY - canvas.offsetTop;
         ctx.beginPath();
         ctx.arc(xPosition, yPosition, 6, 0, 2 * Math.PI);
         ctx.fill();
-
+        // Log the mouse click position
         console.log(xPosition, yPosition);
       });
     </script>
