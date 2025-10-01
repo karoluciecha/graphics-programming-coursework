@@ -205,6 +205,10 @@
           ctx.stroke();
         }
 
+        keyboardMove(pixels, direction = false) {
+          if (direction) this.yPosition -= pixels;
+          else this.yPosition += pixels;
+        }
       }
 
 
@@ -230,6 +234,23 @@
         // Loop animation
         window.requestAnimationFrame(repeatme);
       }
+
+      //keypresses with jQuery
+		  $(document.body).on('keydown', function(e) {
+        console.log(e.which);
+        switch (e.which) {
+          // key code for up arrow
+          case 38:
+            paddleRight.keyboardMove(5, true);
+            console.log('up arrow key pressed!');
+            break;
+            // key code for down arrow
+          case 40:
+            paddleRight.keyboardMove(5, false);
+            console.log('down arrow key pressed!');
+            break;
+          }
+        });
 
       // Start animation
       repeatme();
