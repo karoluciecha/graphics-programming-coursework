@@ -33,7 +33,7 @@
         xPosition = event.clientX;
         yPosition = event.clientY;
         ctx.beginPath();
-        ctx.arc(50, 50, 6, 0, 2 * Math.PI);
+        ctx.arc(xPosition, yPosition, 6, 0, 2 * Math.PI);
         ctx.fill();
         
         noClicks += 1;
