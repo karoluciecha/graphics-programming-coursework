@@ -162,33 +162,32 @@
           this.yPosition = canvasHeight / 2;
           this.keyboardPaddle = keyboardPaddle;
         }
+
+        // Draw the paddleBall with radial gradient
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
+
+          // Create a circular radial gradient
+          let gradient = ctx.createRadialGradient(
+            (this.xPosition - this.radius * 0.3), (this.yPosition - this.radius * 0.3), this.radius * 0.2,   // inner circle
+            this.xPosition, this.yPosition, this.radius          // outer circle
+          );
+
+          if (this.keyboardPaddle) {
+            // Green paddle: bright green center, deep green edge
+            gradient.addColorStop(0, "#bfffc2");    // Center: light green
+            gradient.addColorStop(1, "#008000");    // Edge: dark green
+          } else {
+            // Red paddle: bright red center, deep red edge
+            gradient.addColorStop(0, "#ffb4b4");    // Center: light red
+            gradient.addColorStop(1, "#c00000");    // Edge: dark red
+          }
+
+          ctx.fillStyle = gradient;
+          ctx.fill();
+        }
         
-// Draw the paddleBall with radial gradient
-draw() {
-  ctx.beginPath();
-  ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
-
-  // Create a circular radial gradient
-  let gradient = ctx.createRadialGradient(
-    (this.xPosition - this.radius * 0.3), (this.yPosition - this.radius * 0.3), this.radius * 0.2,   // inner circle
-    this.xPosition, this.yPosition, this.radius          // outer circle
-  );
-
-  if (this.keyboardPaddle) {
-    // Green paddle: bright green center, deep green edge
-    gradient.addColorStop(0, "#bfffc2");    // Center: light green
-    gradient.addColorStop(1, "#008000");    // Edge: dark green
-  } else {
-    // Red paddle: bright red center, deep red edge
-    gradient.addColorStop(0, "#ffb4b4");    // Center: light red
-    gradient.addColorStop(1, "#c00000");    // Edge: dark red
-  }
-
-  ctx.fillStyle = gradient;
-  ctx.fill();
-}
-
-
         // Move paddleBall with keyboard
         keyboardMove(pixels, direction = false) {
           if (direction && this.keyboardPaddle && (this.yPosition - this.radius > 0)) this.yPosition -= pixels;
@@ -205,12 +204,11 @@ draw() {
           else if (((this.yPosition - this.radius) < mousePosition) && this.yPosition + this.radius < canvasWidth) this.yPosition += pixels;
         }
       }
-
+      
       // ---------------- CREATE OBJECTS ----------------
       const ball = new MatchBall(50, 100, 15, 10, 10, 10 * Math.random());
       const paddleRight = new PaddleBall(true);
       const paddleLeft = new PaddleBall(false);
-
 
       // ---------------- ANIMATION LOOP ----------------
       function repeatme() {
@@ -228,86 +226,84 @@ draw() {
         // Loop animation
         window.requestAnimationFrame(repeatme);
       }
+      
+      function collisionDetection() {
+        // Calculate the distance between the ball and each paddle's center
+        var distanceRight = Math.sqrt(Math.pow((paddleRight.xPosition - ball.xPosition), 2) + Math.pow((paddleRight.yPosition - ball.yPosition), 2));
+        var distanceLeft = Math.sqrt(Math.pow((paddleLeft.xPosition - ball.xPosition), 2) + Math.pow((paddleLeft.yPosition - ball.yPosition), 2));
 
-function collisionDetection() {
-  // Calculate the distance between the ball and each paddle's center
-  var distanceRight = Math.sqrt(Math.pow((paddleRight.xPosition - ball.xPosition), 2) + Math.pow((paddleRight.yPosition - ball.yPosition), 2));
-  var distanceLeft = Math.sqrt(Math.pow((paddleLeft.xPosition - ball.xPosition), 2) + Math.pow((paddleLeft.yPosition - ball.yPosition), 2));
+        // Check if the distance is less than the sum of the radii
+        if (distanceLeft <= (paddleLeft.radius + ball.radius)) {    
+          // Place ball just outside the paddle to avoid sticking
+          var angle = Math.atan2(ball.yPosition - paddleLeft.yPosition, ball.xPosition - paddleLeft.xPosition);
+          ball.xPosition = paddleLeft.xPosition + Math.cos(angle) * (paddleLeft.radius + ball.radius + 1);
+          ball.yPosition = paddleLeft.yPosition + Math.sin(angle) * (paddleLeft.radius + ball.radius + 1);
 
-  // Check if the distance is less than the sum of the radii
-  if (distanceLeft <= (paddleLeft.radius + ball.radius)) {    
-    // Place ball just outside the paddle to avoid sticking
-    var angle = Math.atan2(ball.yPosition - paddleLeft.yPosition, ball.xPosition - paddleLeft.xPosition);
-    ball.xPosition = paddleLeft.xPosition + Math.cos(angle) * (paddleLeft.radius + ball.radius + 1);
-    ball.yPosition = paddleLeft.yPosition + Math.sin(angle) * (paddleLeft.radius + ball.radius + 1);
+          // Simple collision response: reverse ball's xSpeed and add some ySpeed based on where it hit the paddle
+          ball.xSpeed *= 1.1;  // Speed up the ball
+          ball.rSpeed += (Math.random() - 0.5) * 2; // Random rotation change on hit
+          ball.ySpeed += (ball.yPosition - paddleLeft.yPosition) * 0.1;  // Add some ySpeed
+          
+          ball.setRandomColor();
+          scoreCalculation(1, "red");
+        }
+        else if (distanceRight <= (paddleRight.radius + ball.radius)) {
+          // Place ball just outside the paddle to avoid sticking
+          var angle = Math.atan2(ball.yPosition - paddleRight.yPosition, ball.xPosition - paddleRight.xPosition);
+          ball.xPosition = paddleRight.xPosition + Math.cos(angle) * (paddleRight.radius + ball.radius + 1);
+          ball.yPosition = paddleRight.yPosition + Math.sin(angle) * (paddleRight.radius + ball.radius + 1);
 
-    // Simple collision response: reverse ball's xSpeed and add some ySpeed based on where it hit the paddle
-    ball.xSpeed *= 1.1;  // Speed up the ball
-    ball.rSpeed += (Math.random() - 0.5) * 2; // Random rotation change on hit
-    ball.ySpeed += (ball.yPosition - paddleLeft.yPosition) * 0.1;  // Add some ySpeed
-    
-    ball.setRandomColor();
-    scoreCalculation(1, "red");
-  }
-  else if (distanceRight <= (paddleRight.radius + ball.radius)) {
-    // Place ball just outside the paddle to avoid sticking
-    var angle = Math.atan2(ball.yPosition - paddleRight.yPosition, ball.xPosition - paddleRight.xPosition);
-    ball.xPosition = paddleRight.xPosition + Math.cos(angle) * (paddleRight.radius + ball.radius + 1);
-    ball.yPosition = paddleRight.yPosition + Math.sin(angle) * (paddleRight.radius + ball.radius + 1);
+          ball.xSpeed *= 1.1;  // Speed up the ball
+          ball.rSpeed += (Math.random() - 0.5) * 2; // Random rotation change on hit
+          ball.ySpeed += (ball.yPosition - paddleLeft.yPosition) * 0.1;  // Add some ySpeed
 
-    ball.xSpeed *= 1.1;  // Speed up the ball
-    ball.rSpeed += (Math.random() - 0.5) * 2; // Random rotation change on hit
-    ball.ySpeed += (ball.yPosition - paddleLeft.yPosition) * 0.1;  // Add some ySpeed
+          ball.setRandomColor();
+          scoreCalculation(1, "green");
+        }
+      }
 
-    ball.setRandomColor();
-    scoreCalculation(1, "green");
-  }
-}
+      function scoreCalculation(type, side) {
+        if (type == 1 && side == "red") {
+          document.getElementById('redScore').innerText = parseInt(document.getElementById('redScore').innerText) + 1;
+          
+          // Show the message for one second
+          document.getElementById('touchdown').innerText = "red scores!";
+          setTimeout(() => {
+            document.getElementById('touchdown').innerText = "";
+          }, 1000);
+        }
 
-function scoreCalculation(type, side) {
+        if (type == 1 && side == "green") {
+          document.getElementById('greenScore').innerText = parseInt(document.getElementById('greenScore').innerText) + 1;
 
-  if (type == 1 && side == "red") {
-    document.getElementById('redScore').innerText = parseInt(document.getElementById('redScore').innerText) + 1;
-    
-    // Show the message for one second
-    document.getElementById('touchdown').innerText = "red scores!";
-    setTimeout(() => {
-      document.getElementById('touchdown').innerText = "";
-    }, 1000);
-  }
+          // Show the message for one second
+          document.getElementById('touchdown').innerText = "green scores!";
+          setTimeout(() => {
+            document.getElementById('touchdown').innerText = "";
+          }, 1000);
+        }
 
-  if (type == 1 && side == "green") {
-    document.getElementById('greenScore').innerText = parseInt(document.getElementById('greenScore').innerText) + 1;
+        if (type == -1 && side == "red") {
+          document.getElementById('redScore').innerText = parseInt(document.getElementById('redScore').innerText) - 1;
+          
+          // Show the message for one second
+          document.getElementById('touchdown').innerText = "red loses a point!";
+          setTimeout(() => {
+            document.getElementById('touchdown').innerText = "";
+          }, 1000);
+        }
 
-    // Show the message for one second
-    document.getElementById('touchdown').innerText = "green scores!";
-    setTimeout(() => {
-      document.getElementById('touchdown').innerText = "";
-    }, 1000);
-  }
+        if (type == -1 && side == "green") {
+          document.getElementById('greenScore').innerText = parseInt(document.getElementById('greenScore').innerText) - 1;
 
-  if (type == -1 && side == "red") {
-    document.getElementById('redScore').innerText = parseInt(document.getElementById('redScore').innerText) - 1;
-    
-    // Show the message for one second
-    document.getElementById('touchdown').innerText = "red loses a point!";
-    setTimeout(() => {
-      document.getElementById('touchdown').innerText = "";
-    }, 1000);
-  }
-
-  if (type == -1 && side == "green") {
-    document.getElementById('greenScore').innerText = parseInt(document.getElementById('greenScore').innerText) - 1;
-
-    // Show the message for one second
-    document.getElementById('touchdown').innerText = "green loses a point!";
-    setTimeout(() => {
-      document.getElementById('touchdown').innerText = "";
-    }, 1000);
-  }
-
-}
-
+          // Show the message for one second
+          document.getElementById('touchdown').innerText = "green loses a point!";
+          setTimeout(() => {
+            document.getElementById('touchdown').innerText = "";
+          }, 1000);
+        }
+      }
+      
       //keypresses with jQuery
 		  $(document.body).on('keydown', function(e) {
         console.log(e.which);
