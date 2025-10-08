@@ -50,107 +50,144 @@
       let canvas = document.getElementById("canvas");
       let ctx = canvas.getContext("2d");
 
-// ---------------- MATCHBALL CLASS ----------------
-class MatchBall {
-  constructor(xPosition, yPosition, radius, xSpeed, ySpeed, rSpeed, gravity = 0, friction = 0.90, rotationFriction = 0.99) {
-    this.xPosition = xPosition;
-    this.yPosition = yPosition;
-    this.radius = radius;
-    this.xSpeed = xSpeed;
-    this.ySpeed = ySpeed;
-    this.rSpeed = rSpeed;
-    this.gravity = gravity;  // 0 for no gravity, >0 for gravity
-    this.friction = friction;  // 1 for no friction, <1 for friction
-    this.rotationFriction = rotationFriction; // 1 for no friction, <1 for friction
-    this.rotation = 0;  // Initial rotation angle (in radians)
-  }
+      // ---------------- MATCHBALL CLASS ----------------
+      class MatchBall {
+        constructor(xPosition, yPosition, radius, xSpeed, ySpeed, rSpeed, gravity = 0, friction = 0.90, rotationFriction = 0.99) {
+          this.xPosition = xPosition;
+          this.yPosition = yPosition;
+          this.radius = radius;
+          this.xSpeed = xSpeed;
+          this.ySpeed = ySpeed;
+          this.rSpeed = rSpeed;
+          this.gravity = gravity;  // 0 for no gravity, >0 for gravity
+          this.friction = friction;  // 1 for no friction, <1 for friction
+          this.rotationFriction = rotationFriction; // 1 for no friction, <1 for friction
+          this.rotation = 0;  // Initial rotation angle (in radians)
+          this.setRandomColor();
+        }
 
-  // Draw the MatchBall
-  draw() {
-    ctx.beginPath();
-    ctx.fillStyle = "blue";
-    ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
-    ctx.fill();
-  }
+        setRandomColor() {
+        // Generate random RGB colors with blue bias
+        const r = Math.floor(Math.random() * 100);       // low red
+        const g = Math.floor(Math.random() * 100);       // low green
+        const b = 150 + Math.floor(Math.random() * 105); // strong blue
 
-  // Move the MatchBall and check for wall collisions
-  move() {
-    this.ySpeed += this.gravity;  // Apply gravity
-    // this.xSpeed *= this.friction;  // Apply friction to x speed
-    this.rSpeed *= this.rotationFriction;  // Apply rotation friction
+        this.gradientStart = `rgb(${r},${g},${b})`;
+        this.gradientEnd = `rgb(${Math.floor(r/3)},${Math.floor(g/3)},${Math.floor(b/3)})`;
+      }
 
-    this.xPosition += this.xSpeed;  // Update x position
-    this.yPosition += this.ySpeed;  // Update y position
 
-    // Bounce off bottom
-    if (this.yPosition >= canvasHeight - this.radius) {
-      this.yPosition = canvasHeight - this.radius;
-      this.ySpeed *= -(this.friction);  // Reverse speed with friction
-      this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
-      this.xSpeed *= this.friction;  // Apply friction to x speed
-    }
+        // Draw the MatchBall
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
 
-    // Bounce off top
-    if (this.yPosition <= this.radius) {
-      this.yPosition = this.radius;
-      this.ySpeed *= -(this.friction);  // Reverse speed with friction
-      this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
-      this.xSpeed *= this.friction;  // Apply friction to x speed
-    }
+          let gradient = ctx.createRadialGradient(
+            (this.xPosition - this.radius * 0.3), (this.yPosition - this.radius * 0.3), this.radius * 0.2,           // highlight at top-left
+            this.xPosition, this.yPosition, this.radius    // edge is centered
+          );
+          gradient.addColorStop(0, this.gradientStart);   // Inner: light blue
+          gradient.addColorStop(1, this.gradientEnd);   // Edge: deep blue
 
-    // Bounce off right
-    if (this.xPosition >= canvasWidth - this.radius) {
-      this.xPosition = canvasWidth - this.radius;
-      this.xSpeed *= -(this.friction);  // Reverse speed with friction
-      this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
-      this.xSpeed *= this.friction;  // Apply friction to x speed
-      scoreCalculation(-1, "green"); // Deduct point for right wall hit
-    }
+          ctx.fillStyle = gradient;
+          ctx.fill();
+        }
 
-    // Bounce off left
-    if (this.xPosition <= this.radius) {
-      this.xPosition = this.radius;
-      this.xSpeed *= -(this.friction);  // Reverse speed with friction
-      this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
-      this.xSpeed *= this.friction;  // Apply friction to x speed
-      scoreCalculation(-1, "red"); // Deduct point for left wall hit
-    }
+        // Move the MatchBall and check for wall collisions
+        move() {
+          this.ySpeed += this.gravity;  // Apply gravity
+          // this.xSpeed *= this.friction;  // Apply friction to x speed
+          this.rSpeed *= this.rotationFriction;  // Apply rotation friction
 
-    // Stop very slow movements
-    if (Math.abs(this.xSpeed) < 0.01) this.xSpeed = 0;
-    if (Math.abs(this.ySpeed) < 0.01) this.ySpeed = 0;
-    if (Math.abs(this.rSpeed) < 0.01) this.rSpeed = 0;
+          this.xPosition += this.xSpeed;  // Update x position
+          this.yPosition += this.ySpeed;  // Update y position
 
-    this.rotate();  // Rotate ball based on current speed
-  }
+          // Bounce off bottom
+          if (this.yPosition >= canvasHeight - this.radius) {
+            this.yPosition = canvasHeight - this.radius;
+            this.ySpeed *= -(this.friction);  // Reverse speed with friction
+            this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
+            this.xSpeed *= this.friction;  // Apply friction to x speed
+          }
 
-  // Rotate the MatchBall
-  rotate(acceleration = 0) {
-    if (acceleration > 0) this.rSpeed *= 1.1;  // Increase rotation speed
-    else if (acceleration < 0) this.rSpeed *= 0.9;  // Decrease rotation speed
-    this.rotation += this.rSpeed * 0.05;  // Update rotation angle
-  }
-}
+          // Bounce off top
+          if (this.yPosition <= this.radius) {
+            this.yPosition = this.radius;
+            this.ySpeed *= -(this.friction);  // Reverse speed with friction
+            this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
+            this.xSpeed *= this.friction;  // Apply friction to x speed
+          }
+
+          // Bounce off right
+          if (this.xPosition >= canvasWidth - this.radius) {
+            this.xPosition = canvasWidth - this.radius;
+            this.xSpeed *= -(this.friction);  // Reverse speed with friction
+            this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
+            this.xSpeed *= this.friction;  // Apply friction to x speed
+            scoreCalculation(-1, "green"); // Deduct point for right wall hit
+          }
+
+          // Bounce off left
+          if (this.xPosition <= this.radius) {
+            this.xPosition = this.radius;
+            this.xSpeed *= -(this.friction);  // Reverse speed with friction
+            this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
+            this.xSpeed *= this.friction;  // Apply friction to x speed
+            scoreCalculation(-1, "red"); // Deduct point for left wall hit
+          }
+
+          // Stop very slow movements
+          if (Math.abs(this.xSpeed) < 0.01) this.xSpeed = 0;
+          if (Math.abs(this.ySpeed) < 0.01) this.ySpeed = 0;
+          if (Math.abs(this.rSpeed) < 0.01) this.rSpeed = 0;
+
+          this.rotate();  // Rotate ball based on current speed
+        }
+
+        // Rotate the MatchBall
+        rotate(acceleration = 0) {
+          if (acceleration > 0) this.rSpeed *= 1.1;  // Increase rotation speed
+          else if (acceleration < 0) this.rSpeed *= 0.9;  // Decrease rotation speed
+          this.rotation += this.rSpeed * 0.05;  // Update rotation angle
+        }
+      }
 
       // ---------------- PADDLEBALL CLASS ----------------
       class PaddleBall {
         constructor(keyboardPaddle = false) {
           this.wallOffset = 30;
-          this.radius = 20;
+          this.radius = 25;
           if (keyboardPaddle) this.xPosition = canvasWidth - this.wallOffset;
           else this.xPosition = this.wallOffset;
           this.yPosition = canvasHeight / 2;
           this.keyboardPaddle = keyboardPaddle;
         }
         
-        // Draw the paddleBall
-        draw() {
-          ctx.beginPath();
-          if (this.keyboardPaddle) ctx.fillStyle = "green";
-          else ctx.fillStyle = "red"
-          ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
-          ctx.fill();
-        }
+// Draw the paddleBall with radial gradient
+draw() {
+  ctx.beginPath();
+  ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
+
+  // Create a circular radial gradient
+  let gradient = ctx.createRadialGradient(
+    (this.xPosition - this.radius * 0.3), (this.yPosition - this.radius * 0.3), this.radius * 0.2,   // inner circle
+    this.xPosition, this.yPosition, this.radius          // outer circle
+  );
+
+  if (this.keyboardPaddle) {
+    // Green paddle: bright green center, deep green edge
+    gradient.addColorStop(0, "#bfffc2");    // Center: light green
+    gradient.addColorStop(1, "#008000");    // Edge: dark green
+  } else {
+    // Red paddle: bright red center, deep red edge
+    gradient.addColorStop(0, "#ffb4b4");    // Center: light red
+    gradient.addColorStop(1, "#c00000");    // Edge: dark red
+  }
+
+  ctx.fillStyle = gradient;
+  ctx.fill();
+}
+
 
         // Move paddleBall with keyboard
         keyboardMove(pixels, direction = false) {
@@ -170,7 +207,7 @@ class MatchBall {
       }
 
       // ---------------- CREATE OBJECTS ----------------
-      const ball = new MatchBall(50, 100, 10, 10, 10, 10 * Math.random());
+      const ball = new MatchBall(50, 100, 15, 10, 10, 10 * Math.random());
       const paddleRight = new PaddleBall(true);
       const paddleLeft = new PaddleBall(false);
 
@@ -209,6 +246,7 @@ function collisionDetection() {
     ball.rSpeed += (Math.random() - 0.5) * 2; // Random rotation change on hit
     ball.ySpeed += (ball.yPosition - paddleLeft.yPosition) * 0.1;  // Add some ySpeed
     
+    ball.setRandomColor();
     scoreCalculation(1, "red");
   }
   else if (distanceRight <= (paddleRight.radius + ball.radius)) {
@@ -221,6 +259,7 @@ function collisionDetection() {
     ball.rSpeed += (Math.random() - 0.5) * 2; // Random rotation change on hit
     ball.ySpeed += (ball.yPosition - paddleLeft.yPosition) * 0.1;  // Add some ySpeed
 
+    ball.setRandomColor();
     scoreCalculation(1, "green");
   }
 }
