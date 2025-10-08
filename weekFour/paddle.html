@@ -52,7 +52,7 @@
 
 // ---------------- MATCHBALL CLASS ----------------
 class MatchBall {
-  constructor(xPosition, yPosition, radius, xSpeed, ySpeed, rSpeed, gravity = 0, friction = 1, rotationFriction = 1) {
+  constructor(xPosition, yPosition, radius, xSpeed, ySpeed, rSpeed, gravity = 0, friction = 0.90, rotationFriction = 0.99) {
     this.xPosition = xPosition;
     this.yPosition = yPosition;
     this.radius = radius;
@@ -76,7 +76,7 @@ class MatchBall {
   // Move the MatchBall and check for wall collisions
   move() {
     this.ySpeed += this.gravity;  // Apply gravity
-    this.xSpeed *= this.friction;  // Apply friction to x speed
+    // this.xSpeed *= this.friction;  // Apply friction to x speed
     this.rSpeed *= this.rotationFriction;  // Apply rotation friction
 
     this.xPosition += this.xSpeed;  // Update x position
@@ -87,6 +87,7 @@ class MatchBall {
       this.yPosition = canvasHeight - this.radius;
       this.ySpeed *= -(this.friction);  // Reverse speed with friction
       this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
+      this.xSpeed *= this.friction;  // Apply friction to x speed
     }
 
     // Bounce off top
@@ -94,6 +95,7 @@ class MatchBall {
       this.yPosition = this.radius;
       this.ySpeed *= -(this.friction);  // Reverse speed with friction
       this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
+      this.xSpeed *= this.friction;  // Apply friction to x speed
     }
 
     // Bounce off right
@@ -101,6 +103,7 @@ class MatchBall {
       this.xPosition = canvasWidth - this.radius;
       this.xSpeed *= -(this.friction);  // Reverse speed with friction
       this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
+      this.xSpeed *= this.friction;  // Apply friction to x speed
       scoreCalculation(-1, "green"); // Deduct point for right wall hit
     }
 
@@ -109,6 +112,7 @@ class MatchBall {
       this.xPosition = this.radius;
       this.xSpeed *= -(this.friction);  // Reverse speed with friction
       this.rSpeed *= -(this.rotationFriction);  // Reverse rotation speed with friction
+      this.xSpeed *= this.friction;  // Apply friction to x speed
       scoreCalculation(-1, "red"); // Deduct point for left wall hit
     }
 
@@ -131,7 +135,7 @@ class MatchBall {
       // ---------------- PADDLEBALL CLASS ----------------
       class PaddleBall {
         constructor(keyboardPaddle = false) {
-          this.wallOffset = 40;
+          this.wallOffset = 30;
           this.radius = 20;
           if (keyboardPaddle) this.xPosition = canvasWidth - this.wallOffset;
           else this.xPosition = this.wallOffset;
@@ -166,7 +170,7 @@ class MatchBall {
       }
 
       // ---------------- CREATE OBJECTS ----------------
-      const ball = new MatchBall(50, 100, 10, 10 * Math.random(), 10 * Math.random(), 10 * Math.random());
+      const ball = new MatchBall(50, 100, 10, 10, 10, 10 * Math.random());
       const paddleRight = new PaddleBall(true);
       const paddleLeft = new PaddleBall(false);
 
@@ -194,8 +198,31 @@ function collisionDetection() {
   var distanceLeft = Math.sqrt(Math.pow((paddleLeft.xPosition - ball.xPosition), 2) + Math.pow((paddleLeft.yPosition - ball.yPosition), 2));
 
   // Check if the distance is less than the sum of the radii
-  if (distanceLeft <= (paddleLeft.radius + ball.radius)) scoreCalculation(1, "red");
-  else if (distanceRight <= (paddleRight.radius + ball.radius)) scoreCalculation(1, "green");
+  if (distanceLeft <= (paddleLeft.radius + ball.radius)) {    
+    // Place ball just outside the paddle to avoid sticking
+    var angle = Math.atan2(ball.yPosition - paddleLeft.yPosition, ball.xPosition - paddleLeft.xPosition);
+    ball.xPosition = paddleLeft.xPosition + Math.cos(angle) * (paddleLeft.radius + ball.radius + 1);
+    ball.yPosition = paddleLeft.yPosition + Math.sin(angle) * (paddleLeft.radius + ball.radius + 1);
+
+    // Simple collision response: reverse ball's xSpeed and add some ySpeed based on where it hit the paddle
+    ball.xSpeed *= 1.1;  // Speed up the ball
+    ball.rSpeed += (Math.random() - 0.5) * 2; // Random rotation change on hit
+    ball.ySpeed += (ball.yPosition - paddleLeft.yPosition) * 0.1;  // Add some ySpeed
+    
+    scoreCalculation(1, "red");
+  }
+  else if (distanceRight <= (paddleRight.radius + ball.radius)) {
+    // Place ball just outside the paddle to avoid sticking
+    var angle = Math.atan2(ball.yPosition - paddleRight.yPosition, ball.xPosition - paddleRight.xPosition);
+    ball.xPosition = paddleRight.xPosition + Math.cos(angle) * (paddleRight.radius + ball.radius + 1);
+    ball.yPosition = paddleRight.yPosition + Math.sin(angle) * (paddleRight.radius + ball.radius + 1);
+
+    ball.xSpeed *= 1.1;  // Speed up the ball
+    ball.rSpeed += (Math.random() - 0.5) * 2; // Random rotation change on hit
+    ball.ySpeed += (ball.yPosition - paddleLeft.yPosition) * 0.1;  // Add some ySpeed
+
+    scoreCalculation(1, "green");
+  }
 }
 
 function scoreCalculation(type, side) {
