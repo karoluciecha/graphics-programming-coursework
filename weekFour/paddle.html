@@ -16,12 +16,23 @@
       h1 {
         text-align: center;
       }
+
+      #redScore {
+        color: red;
+      }
+
+      #greenScore {
+        color: green;
+      }
     </style>
   </head>
   <body>
     <h1>Karol Uciecha: G00436758</h1>
     <canvas id="canvas" width="500" height="500"></canvas>
+    <h1>Score</h1>
+    <h1><span id="redScore">0</span> : <span id="greenScore">0</span></h1>
     <h1 id="touchdown"></h1>
+
     <script type="text/javascript">
       // Canvas dimensions
       const canvasHeight = 500;
@@ -175,7 +186,8 @@ function collisionDetection() {
   // Check if the distance is less than the sum of the radii
   if (distanceLeft <= (paddleLeft.radius + ball.radius)) {
     // Show the message for one second
-    document.getElementById('touchdown').innerText = "LEFT TOUCHES";
+    document.getElementById('redScore').innerText = parseInt(document.getElementById('redScore').innerText) + 1;
+    document.getElementById('touchdown').innerText = "Red scores!";
     
     // Hide the message after 1 second
     setTimeout(() => {
@@ -183,8 +195,9 @@ function collisionDetection() {
     }, 1000);
   }
   else if (distanceRight <= (paddleRight.radius + ball.radius)) {
+    document.getElementById('greenScore').innerText = parseInt(document.getElementById('greenScore').innerText) + 1;
     // Show the message for one second
-    document.getElementById('touchdown').innerText = "RIGHT TOUCHES";
+    document.getElementById('touchdown').innerText = "Green scores!";
     
     // Hide the message after 1 second
     setTimeout(() => {
@@ -193,6 +206,9 @@ function collisionDetection() {
   }
 }
 
+function scoreCalculation() {
+  
+}
 
       //keypresses with jQuery
 		  $(document.body).on('keydown', function(e) {
