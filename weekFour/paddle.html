@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <title>Canvas</title>
+    <style type="text/css">
+      body {
+        background-color: white;
+      }
+      
+      canvas {
+        border: 1px solid black;
+      }
+
+      h1 {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Karol Uciecha: G00436758</h1>
+    <canvas id="canvas" width="500" height="500"></canvas>
+
+    <script type="text/javascript">
+      // Canvas dimensions
+      const canvasHeight = 500;
+      const canvasWidth = 500;
+
+      // Get canvas and drawing context
+      let canvas = document.getElementById("canvas");
+      let ctx = canvas.getContext("2d");
+
+      // ---------------- BALL CLASS ----------------
+      class Ball {
+        constructor(xPosition, yPosition, radius, xSpeed, ySpeed, xBounceSpeed = 1, yBounceSpeed = 1) {
+          this.xPosition = xPosition;
+          this.yPosition = yPosition;
+          this.radius = radius;
+          this.xSpeed = xSpeed;
+          this.ySpeed = ySpeed;
+          this.xBounceSpeed = xBounceSpeed;
+          this.yBounceSpeed = yBounceSpeed;
+        }
+
+        // Draw the ball (circle outline)
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
+          ctx.stroke();
+        }
+
+        // Move the ball and check for wall collisions
+        move() {
+          this.xPosition += this.xSpeed;
+          this.yPosition += this.ySpeed;
+
+          // Bounce off bottom
+          if (this.yPosition >= canvasHeight - this.radius) {
+            this.yPosition = canvasHeight - this.radius;
+            this.ySpeed *= this.yBounceSpeed;
+          }
+
+          // Bounce off top
+          if (this.yPosition <= this.radius) {
+            this.yPosition = this.radius;
+            this.ySpeed *= this.yBounceSpeed;
+          }
+
+          // Bounce off right
+          if (this.xPosition >= canvasWidth - this.radius) {
+            this.xPosition = canvasWidth - this.radius;
+            this.xSpeed *= this.xBounceSpeed;
+          }
+
+          // Bounce off left
+          if (this.xPosition <= this.radius) {
+            this.xPosition = this.radius;
+            this.xSpeed *= this.xBounceSpeed;
+          }
+        }
+      }
+
+      // ---------------- PACMAN CLASS ----------------
+      class PacMan {
+        constructor(xPosition, yPosition, radius, rotation, xSpeed, ySpeed, rotationSpeed = 1) {
+          this.xPosition = xPosition;
+          this.yPosition = yPosition;
+          this.radius = radius;
+          this.rotation = rotation; // mouth rotation
+          this.xSpeed = xSpeed;
+          this.ySpeed = ySpeed;
+          this.rotationSpeed = rotationSpeed; // controls mouth rotation speed
+        }
+
+        // Draw PacMan with open mouth
+        draw() {
+          ctx.beginPath();
+          ctx.arc(
+            this.xPosition,
+            this.yPosition,
+            this.radius,
+            ((11 * Math.PI) / 6) - this.rotation, // mouth start
+            ((1 * Math.PI) / 6) - this.rotation,  // mouth end
+            true
+          );
+
+          // Draw mouth (two lines)
+          ctx.moveTo(this.xPosition, this.yPosition);
+          ctx.lineTo(
+            this.radius * Math.cos((11 / 6 * Math.PI) - this.rotation) + this.xPosition,
+            this.radius * Math.sin((11 / 6 * Math.PI) - this.rotation) + this.yPosition
+          );
+
+          ctx.moveTo(this.xPosition, this.yPosition);
+          ctx.lineTo(
+            this.radius * Math.cos((1 / 6 * Math.PI) - this.rotation) + this.xPosition,
+            this.radius * Math.sin((1 / 6 * Math.PI) - this.rotation) + this.yPosition
+          );
+
+          ctx.stroke();
+        }
+
+        // Move PacMan and check wall collisions
+        move() {
+          const gravity = 0.5;
+          const friction = 0.99;
+          const rotationFriction = 0.99;
+
+          // Apply gravity, friction, and rotation friction
+          this.ySpeed += gravity;
+          this.xSpeed *= friction;
+          this.rotationSpeed *= rotationFriction;
+
+          this.xPosition += this.xSpeed;
+          this.yPosition += this.ySpeed;
+
+          // Bounce bottom
+          if (this.yPosition >= canvasHeight - this.radius) {
+            this.yPosition = canvasHeight - this.radius;
+            this.ySpeed *= -0.9;  // Lose energy, bounce to 90% height
+            this.rotationSpeed *= -1; // flip rotation
+          }
+
+          // Bounce top
+          if (this.yPosition <= this.radius) {
+            this.yPosition = this.radius;
+            this.ySpeed *= -0.9;
+            this.rotationSpeed *= -1;
+          }
+
+          // Bounce right
+          if (this.xPosition >= canvasWidth - this.radius) {
+            this.xPosition = canvasWidth - this.radius;
+            this.xSpeed *= -1;
+            this.rotationSpeed *= -1;
+          }
+
+          // Bounce left
+          if (this.xPosition <= this.radius) {
+            this.xPosition = this.radius;
+            this.xSpeed *= -1;
+            this.rotationSpeed *= -1;
+          }
+
+          // Stop very slow movements
+          if (Math.abs(this.xSpeed) < 0.01) this.xSpeed = 0;
+          if (Math.abs(this.ySpeed) < 0.01) this.ySpeed = 0;
+          if (Math.abs(this.rotationSpeed) < 0.01) this.rotationSpeed = 0;
+
+          this.rotate();
+        }
+
+        // Rotate PacMan
+        rotate(acceleration = 0) {
+          if (acceleration > 0) this.rotationSpeed *= 1.1;
+          else if (acceleration < 0) this.rotationSpeed *= 0.9;
+          
+          this.rotation += this.rotationSpeed * 0.05;
+      }
+    }
+
+      // ---------------- PADDLEBALL CLASS ----------------
+      class PaddleBall {
+        constructor(keyboardPaddle = false) {
+          this.wallOffset = 40;
+          this.radius = 20;
+          if (keyboardPaddle) this.xPosition = canvasWidth - this.wallOffset;
+          else this.xPosition = this.wallOffset;
+          this.yPosition = canvasHeight / 2;
+          this.keyboardPaddle = keyboardPaddle;
+        }
+        
+        // Draw the paddleBall
+        draw() {
+          ctx.beginPath();
+          if (this.keyboardPaddle) ctx.fillStyle = "green";
+          else ctx.fillStyle = "red"
+          ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+
+        // Move paddleBall with keyboard
+        keyboardMove(pixels, direction = false) {
+          if (direction && this.keyboardPaddle && (this.yPosition - this.radius > 0)) this.yPosition -= pixels;
+          // Prevent paddle from going out of bounds
+          else if (direction == false && this.keyboardPaddle && (this.yPosition + this.radius < canvasHeight)) this.yPosition += pixels;
+        }
+
+        // Move paddleBall with mouse
+        mouseMove(pixels, mousePosition) 
+        {
+          // Move paddleBall towards mouse position
+          if ((this.yPosition - this.radius > mousePosition) && (this.yPosition - this.radius > 0)) this.yPosition -= pixels;
+          // Prevent paddleBall from going out of bounds
+          else if (((this.yPosition - this.radius) < mousePosition) && this.yPosition + this.radius < canvasWidth) this.yPosition += pixels;
+        }
+      }
+
+      // ---------------- CREATE OBJECTS ----------------
+      const ball = new Ball(50, 10, 5, 5, 10, -1 * Math.random(), -1 * Math.random());
+      const pacman = new PacMan(200, 200, 30, 0, 5, 10, 5);
+      const paddleRight = new PaddleBall(true);
+      const paddleLeft = new PaddleBall(false);
+
+
+      // ---------------- ANIMATION LOOP ----------------
+      function repeatme() {
+        // Clear screen
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        // Draw + Move objects
+        ball.draw();
+        pacman.draw();
+        ball.move();
+        pacman.move();
+        paddleRight.draw();
+        paddleLeft.draw();
+
+        // Loop animation
+        window.requestAnimationFrame(repeatme);
+      }
+
+      //keypresses with jQuery
+		  $(document.body).on('keydown', function(e) {
+        console.log(e.which);
+        switch (e.which) {
+          // key code for O (minus rotation speed)
+          case 79:
+            pacman.rotate(-1);
+            break;
+          // key code for P (plus rotation speed)
+          case 80:
+            pacman.rotate(1);
+            break;
+          // key code for up arrow
+          case 38:
+            paddleRight.keyboardMove(5, true);
+            break;
+            // key code for down arrow
+          case 40:
+            paddleRight.keyboardMove(5, false);
+            break;
+          }
+        });
+
+        canvas.addEventListener("mousemove", function(event) {
+        // Locating the mouse click on the canvas
+        yPosition = event.clientY - canvas.offsetTop;
+        paddleLeft.mouseMove(5, yPosition);
+      });
+
+      // Start animation
+      repeatme();
+    </script>
+  </body>
+</html>
