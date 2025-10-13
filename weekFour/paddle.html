@@ -218,6 +218,7 @@
         window.requestAnimationFrame(repeatme);
       }
 
+      // ---------------- COLLISION DETECTION ----------------
       function collisionDetection() {
         const now = Date.now();
         let newBalls = [];
@@ -285,12 +286,7 @@
           }
 
           // ---- DELETE ON WALL HIT ----
-          if (ball.xPosition <= ball.radius || ball.xPosition >= canvasWidth - ball.radius) {
-            if (balls.length > 1) {
-              balls.splice(index, 1);
-              scoreCalculation(-1, ball.xPosition <= ball.radius ? "red" : "green");
-            }
-          }
+          if (ball.xPosition <= ball.radius || ball.xPosition >= canvasWidth - ball.radius) if (balls.length > 1) balls.splice(index, 1);
         });
 
         balls.push(...newBalls);
