@@ -19,27 +19,50 @@
         // Scene creation
         var scene = new THREE.Scene();
 
-        // Create a sphere geometry with a detail parameter
-        const geometry = new THREE.SphereGeometry(10, 32, 32);
+        // Class to encapsulate the sphere and its properties
+        class Sphere {
+            constructor(radius, widthSegments, heightSegments, color) {
 
-        // Adding material to the geometry shape
-        const material = new THREE.MeshLambertMaterial({ color: 0xffff00 });
+                // Create geometry and material
+                this.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+                this.material = new THREE.MeshLambertMaterial({ color: color });
 
-        // Create the mesh combining geometry and material
-        var sphere = new THREE.Mesh(geometry, material);
+                // Create mesh (sphere)
+                this.mesh = new THREE.Mesh(this.geometry, this.material);
+
+                // Initial position of the sphere
+                this.mesh.position.set(0, 0, 0);
+            }
+
+            // Method to add the sphere to the scene
+            addToScene(scene) {
+                scene.add(this.mesh);
+            }
+
+            // Method to update the sphere's position and rotation
+            move() {
+                this.mesh.rotation.x += 0.01;
+                this.mesh.rotation.y += 0.01;
+                this.mesh.position.x -= 0.02;
+                this.mesh.position.y -= 0.01;
+            }
+        }
+
+        // Create a new Sphere instance
+        const sphere = new Sphere(10, 32, 32, 0xffff00);
+
+        // Add sphere to the scene
+        sphere.addToScene(scene);
 
         // Adding a spotlight
         var spotLight = new THREE.SpotLight(0xffffff);
         spotLight.position.set(1, 15, 15);
-        spotLight.target = sphere; // Ensure the spotlight targets the sphere
+        spotLight.target = sphere.mesh; // Ensure the spotlight targets the sphere
         scene.add(spotLight);
 
         // Optionally add an ambient light to prevent dark shadows
         var ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
         scene.add(ambientLight);
-
-        // Add sphere to the scene
-        scene.add(sphere);
 
         // Create camera: fov 80, aspect ratio window size, near/far clipping planes
         var camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -54,11 +77,8 @@
 
         // Animation loop function
         function repeatMe() {
-            // Rotate the sphere a bit on x and y axis every frame
-            sphere.rotation.x += 0.01;
-            sphere.rotation.y += 0.01;
-            sphere.position.x -= 0.02;
-            sphere.position.y -= 0.01;
+            // Update the sphere's rotation and position
+            sphere.move();
 
             // Render the scene from the perspective of the camera
             renderer.render(scene, camera);
