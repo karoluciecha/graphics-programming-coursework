@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title></title>
@@ -14,19 +15,55 @@
 <body>
     <h1>Karol Uciecha</h1>
     <script type="text/javascript">
-        
-        // Implement scene - Create a Three.js scene to hold objects.
+
+        // Scene creation
         var scene = new THREE.Scene();
+        // Create a sphere geometry with a detail parameter
+        const geometry = new THREE.SphereGeometry(10, 32, 16);
 
-        // Create a camera with specified properties.
-        var camera = new THREE.PerspectiveCamera(76, window.innerWidth / window.innerHeight, 0.1, 1000);
-        // Set camera position
+        // Use MeshBasicMaterial (just a simple color material)
+        const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 
-        // Implement renderer - Create a WebGL renderer for rendering the scene.
+        // Create the mesh combining geometry and material
+        var sphere = new THREE.Mesh(geometry, material);
+
+        // Add sphere to the scene
+        scene.add(sphere);
+
+        // Create camera: fov 80, aspect ratio window size, near/far clipping planes
+        var camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        // Position the camera so it is in front of the sphere
+        camera.position.z = 20;
+
+        // Create renderer and set size to full window size
         var renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
-        
+
+        // Animation loop function
+        function repeatMe() {
+            // Rotate the sphere a bit on x and y axis every frame
+            sphere.rotation.x += 0.01;
+            sphere.rotation.y += 0.01;
+
+            // Render the scene from the perspective of the camera
+            renderer.render(scene, camera);
+
+            // Call repeatMe again on the next frame
+            requestAnimationFrame(repeatMe);
+        }
+
+        // Start the animation loop
+        repeatMe();
+
+        // Optional: Handle resizing so the canvas adjusts when window size changes
+        window.addEventListener('resize', function () {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
     </script>
 </body>
 

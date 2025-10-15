@@ -1,335 +1,337 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-    <title>Canvas</title>
-    <style type="text/css">
-      body {
-        background-color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        margin: 0;
+
+<head>
+  <meta charset="UTF-8">
+  <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+  <title>Canvas</title>
+  <style type="text/css">
+    body {
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0;
+    }
+
+    #redScore {
+      color: red;
+    }
+
+    #greenScore {
+      color: green;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Karol Uciecha: G00436758</h1>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <h1>Score: <span id="touchdown"></span></h1>
+  <h1><span id="redScore">0</span> ¦ <span id="greenScore">0</span></h1>
+
+  <script type="text/javascript">
+    // Canvas dimensions
+    const canvasHeight = 500;
+    const canvasWidth = 500;
+
+    // Get canvas and drawing context
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+
+    // ---------------- MATCHBALL CLASS ----------------
+    class MatchBall {
+      constructor(xPosition, yPosition, radius, xSpeed, ySpeed, rSpeed, gravity = 0, friction = 0.90, rotationFriction = 0.99) {
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
+        this.radius = radius;
+        this.xSpeed = xSpeed;
+        this.ySpeed = ySpeed;
+        this.rSpeed = rSpeed;
+        this.gravity = gravity;
+        this.friction = friction;
+        this.rotationFriction = rotationFriction;
+        this.rotation = 0;
+        this.setRandomColor();
       }
 
-      canvas {
-        border: 1px solid black;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
+      setRandomColor() {
+        const r = Math.floor(Math.random() * 100);
+        const g = Math.floor(Math.random() * 100);
+        const b = 150 + Math.floor(Math.random() * 105);
+
+        this.gradientStart = `rgb(${r},${g},${b})`;
+        this.gradientEnd = `rgb(${Math.floor(r / 3)},${Math.floor(g / 3)},${Math.floor(b / 3)})`;
       }
 
-      h1 {
-        text-align: center;
-        margin: 0;
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
+
+        let gradient = ctx.createRadialGradient(
+          this.xPosition - this.radius * 0.3,
+          this.yPosition - this.radius * 0.3,
+          this.radius * 0.2,
+          this.xPosition,
+          this.yPosition,
+          this.radius
+        );
+
+        gradient.addColorStop(0, this.gradientStart);
+        gradient.addColorStop(1, this.gradientEnd);
+
+        ctx.fillStyle = gradient;
+        ctx.fill();
       }
 
-      #redScore {
-        color: red;
-      }
+      move() {
+        this.ySpeed += this.gravity;
+        this.rSpeed *= this.rotationFriction;
+        this.xPosition += this.xSpeed;
+        this.yPosition += this.ySpeed;
 
-      #greenScore {
-        color: green;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Karol Uciecha: G00436758</h1>
-    <canvas id="canvas" width="500" height="500"></canvas>
-    <h1>Score: <span id="touchdown"></span></h1>
-    <h1><span id="redScore">0</span> ¦ <span id="greenScore">0</span></h1>
-
-    <script type="text/javascript">
-      // Canvas dimensions
-      const canvasHeight = 500;
-      const canvasWidth = 500;
-
-      // Get canvas and drawing context
-      let canvas = document.getElementById("canvas");
-      let ctx = canvas.getContext("2d");
-
-      // ---------------- MATCHBALL CLASS ----------------
-      class MatchBall {
-        constructor(xPosition, yPosition, radius, xSpeed, ySpeed, rSpeed, gravity = 0, friction = 0.90, rotationFriction = 0.99) {
-          this.xPosition = xPosition;
-          this.yPosition = yPosition;
-          this.radius = radius;
-          this.xSpeed = xSpeed;
-          this.ySpeed = ySpeed;
-          this.rSpeed = rSpeed;
-          this.gravity = gravity;
-          this.friction = friction;
-          this.rotationFriction = rotationFriction;
-          this.rotation = 0;
-          this.setRandomColor();
+        if (this.yPosition >= canvasHeight - this.radius) {
+          this.yPosition = canvasHeight - this.radius;
+          this.ySpeed *= -this.friction;
+          this.rSpeed *= -this.rotationFriction;
+          this.xSpeed *= this.friction;
         }
 
-        setRandomColor() {
-          const r = Math.floor(Math.random() * 100);
-          const g = Math.floor(Math.random() * 100);
-          const b = 150 + Math.floor(Math.random() * 105);
-
-          this.gradientStart = `rgb(${r},${g},${b})`;
-          this.gradientEnd = `rgb(${Math.floor(r / 3)},${Math.floor(g / 3)},${Math.floor(b / 3)})`;
+        if (this.yPosition <= this.radius) {
+          this.yPosition = this.radius;
+          this.ySpeed *= -this.friction;
+          this.rSpeed *= -this.rotationFriction;
+          this.xSpeed *= this.friction;
         }
 
-        draw() {
-          ctx.beginPath();
-          ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
+        if (this.xPosition >= canvasWidth - this.radius) {
+          this.xPosition = canvasWidth - this.radius;
+          this.xSpeed *= -this.friction;
+          this.rSpeed *= -this.rotationFriction;
+          this.xSpeed *= this.friction;
+          scoreCalculation(-1, "green");
+        }
 
-          let gradient = ctx.createRadialGradient(
-            this.xPosition - this.radius * 0.3,
-            this.yPosition - this.radius * 0.3,
-            this.radius * 0.2,
-            this.xPosition,
-            this.yPosition,
-            this.radius
+        if (this.xPosition <= this.radius) {
+          this.xPosition = this.radius;
+          this.xSpeed *= -this.friction;
+          this.rSpeed *= -this.rotationFriction;
+          this.xSpeed *= this.friction;
+          scoreCalculation(-1, "red");
+        }
+
+        if (Math.abs(this.xSpeed) < 0.01) this.xSpeed = 0;
+        if (Math.abs(this.ySpeed) < 0.01) this.ySpeed = 0;
+        if (Math.abs(this.rSpeed) < 0.01) this.rSpeed = 0;
+
+        this.rotate();
+      }
+
+      rotate(acceleration = 0) {
+        if (acceleration > 0) this.rSpeed *= 1.1;
+        else if (acceleration < 0) this.rSpeed *= 0.9;
+        this.rotation += this.rSpeed * 0.05;
+      }
+    }
+
+    // ---------------- PADDLEBALL CLASS ----------------
+    class PaddleBall {
+      constructor(keyboardPaddle = false) {
+        this.wallOffset = 30;
+        this.radius = 25;
+        this.xPosition = keyboardPaddle ? canvasWidth - this.wallOffset : this.wallOffset;
+        this.yPosition = canvasHeight / 2;
+        this.keyboardPaddle = keyboardPaddle;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
+
+        let gradient = ctx.createRadialGradient(
+          this.xPosition - this.radius * 0.3,
+          this.yPosition - this.radius * 0.3,
+          this.radius * 0.2,
+          this.xPosition,
+          this.yPosition,
+          this.radius
+        );
+
+        if (this.keyboardPaddle) {
+          gradient.addColorStop(0, "#bfffc2");
+          gradient.addColorStop(1, "#008000");
+        } else {
+          gradient.addColorStop(0, "#ffb4b4");
+          gradient.addColorStop(1, "#c00000");
+        }
+
+        ctx.fillStyle = gradient;
+        ctx.fill();
+      }
+
+      keyboardMove(pixels, direction = false) {
+        if (direction && this.keyboardPaddle && (this.yPosition - this.radius > 0)) this.yPosition -= pixels;
+        else if (!direction && this.keyboardPaddle && (this.yPosition + this.radius < canvasHeight)) this.yPosition += pixels;
+      }
+
+      mouseMove(pixels, mousePosition) {
+        if ((this.yPosition - this.radius > mousePosition) && (this.yPosition - this.radius > 0)) this.yPosition -= pixels;
+        else if ((this.yPosition - this.radius < mousePosition) && this.yPosition + this.radius < canvasWidth) this.yPosition += pixels;
+      }
+    }
+
+    // ---------------- CREATE OBJECTS ----------------
+    let balls = [new MatchBall(50, 100, 15, 10, 10, 10 * Math.random())];
+    const paddleRight = new PaddleBall(true);
+    const paddleLeft = new PaddleBall(false);
+
+    let lastCollisionLeft = 0;
+    let lastCollisionRight = 0;
+    const COLLISION_COOLDOWN = 300;
+
+    // ---------------- ANIMATION LOOP ----------------
+    function repeatme() {
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+      for (let b of balls) {
+        b.draw();
+        b.move();
+      }
+
+      paddleRight.draw();
+      paddleLeft.draw();
+
+      collisionDetection();
+
+      window.requestAnimationFrame(repeatme);
+    }
+
+    // ---------------- COLLISION DETECTION ----------------
+    function collisionDetection() {
+      const now = Date.now();
+      let newBalls = [];
+
+      balls.forEach((ball, index) => {
+        const distanceRight = Math.hypot(paddleRight.xPosition - ball.xPosition, paddleRight.yPosition - ball.yPosition);
+        const distanceLeft = Math.hypot(paddleLeft.xPosition - ball.xPosition, paddleLeft.yPosition - ball.yPosition);
+
+        // ---- LEFT PADDLE COLLISION ----
+        if (distanceLeft <= (paddleLeft.radius + ball.radius) && now - lastCollisionLeft > COLLISION_COOLDOWN) {
+          lastCollisionLeft = now;
+
+          const angle = Math.atan2(ball.yPosition - paddleLeft.yPosition, ball.xPosition - paddleLeft.xPosition);
+          ball.xPosition = paddleLeft.xPosition + Math.cos(angle) * (paddleLeft.radius + ball.radius + 1);
+          ball.yPosition = paddleLeft.yPosition + Math.sin(angle) * (paddleLeft.radius + ball.radius + 1);
+
+          ball.xSpeed = Math.abs(ball.xSpeed) * 1.1;
+          ball.rSpeed += (Math.random() - 0.5) * 2;
+          ball.ySpeed += (ball.yPosition - paddleLeft.yPosition) * 0.1;
+
+          ball.setRandomColor();
+          scoreCalculation(1, "red");
+
+          const angleOffset = (Math.random() - 0.5) * 0.5;
+          const speed = Math.hypot(ball.xSpeed, ball.ySpeed);
+          const direction = Math.atan2(ball.ySpeed, ball.xSpeed) + angleOffset;
+          const clone = new MatchBall(
+            ball.xPosition + Math.cos(direction) * ball.radius * 2,
+            ball.yPosition + Math.sin(direction) * ball.radius * 2,
+            ball.radius,
+            Math.cos(direction) * speed * 1.05,
+            Math.sin(direction) * speed * 1.05,
+            ball.rSpeed
           );
-
-          gradient.addColorStop(0, this.gradientStart);
-          gradient.addColorStop(1, this.gradientEnd);
-
-          ctx.fillStyle = gradient;
-          ctx.fill();
+          newBalls.push(clone);
         }
 
-        move() {
-          this.ySpeed += this.gravity;
-          this.rSpeed *= this.rotationFriction;
-          this.xPosition += this.xSpeed;
-          this.yPosition += this.ySpeed;
+        // ---- RIGHT PADDLE COLLISION ----
+        if (distanceRight <= (paddleRight.radius + ball.radius) && now - lastCollisionRight > COLLISION_COOLDOWN) {
+          lastCollisionRight = now;
 
-          if (this.yPosition >= canvasHeight - this.radius) {
-            this.yPosition = canvasHeight - this.radius;
-            this.ySpeed *= -this.friction;
-            this.rSpeed *= -this.rotationFriction;
-            this.xSpeed *= this.friction;
-          }
+          const angle = Math.atan2(ball.yPosition - paddleRight.yPosition, ball.xPosition - paddleRight.xPosition);
+          ball.xPosition = paddleRight.xPosition + Math.cos(angle) * (paddleRight.radius + ball.radius + 1);
+          ball.yPosition = paddleRight.yPosition + Math.sin(angle) * (paddleRight.radius + ball.radius + 1);
 
-          if (this.yPosition <= this.radius) {
-            this.yPosition = this.radius;
-            this.ySpeed *= -this.friction;
-            this.rSpeed *= -this.rotationFriction;
-            this.xSpeed *= this.friction;
-          }
+          ball.xSpeed = -Math.abs(ball.xSpeed) * 1.1;
+          ball.rSpeed += (Math.random() - 0.5) * 2;
+          ball.ySpeed += (ball.yPosition - paddleRight.yPosition) * 0.1;
 
-          if (this.xPosition >= canvasWidth - this.radius) {
-            this.xPosition = canvasWidth - this.radius;
-            this.xSpeed *= -this.friction;
-            this.rSpeed *= -this.rotationFriction;
-            this.xSpeed *= this.friction;
-            scoreCalculation(-1, "green");
-          }
+          ball.setRandomColor();
+          scoreCalculation(1, "green");
 
-          if (this.xPosition <= this.radius) {
-            this.xPosition = this.radius;
-            this.xSpeed *= -this.friction;
-            this.rSpeed *= -this.rotationFriction;
-            this.xSpeed *= this.friction;
-            scoreCalculation(-1, "red");
-          }
-
-          if (Math.abs(this.xSpeed) < 0.01) this.xSpeed = 0;
-          if (Math.abs(this.ySpeed) < 0.01) this.ySpeed = 0;
-          if (Math.abs(this.rSpeed) < 0.01) this.rSpeed = 0;
-
-          this.rotate();
-        }
-
-        rotate(acceleration = 0) {
-          if (acceleration > 0) this.rSpeed *= 1.1;
-          else if (acceleration < 0) this.rSpeed *= 0.9;
-          this.rotation += this.rSpeed * 0.05;
-        }
-      }
-
-      // ---------------- PADDLEBALL CLASS ----------------
-      class PaddleBall {
-        constructor(keyboardPaddle = false) {
-          this.wallOffset = 30;
-          this.radius = 25;
-          this.xPosition = keyboardPaddle ? canvasWidth - this.wallOffset : this.wallOffset;
-          this.yPosition = canvasHeight / 2;
-          this.keyboardPaddle = keyboardPaddle;
-        }
-
-        draw() {
-          ctx.beginPath();
-          ctx.arc(this.xPosition, this.yPosition, this.radius, 0, 2 * Math.PI);
-
-          let gradient = ctx.createRadialGradient(
-            this.xPosition - this.radius * 0.3,
-            this.yPosition - this.radius * 0.3,
-            this.radius * 0.2,
-            this.xPosition,
-            this.yPosition,
-            this.radius
+          const angleOffset = (Math.random() - 0.5) * 0.5;
+          const speed = Math.hypot(ball.xSpeed, ball.ySpeed);
+          const direction = Math.atan2(ball.ySpeed, ball.xSpeed) + angleOffset;
+          const clone = new MatchBall(
+            ball.xPosition + Math.cos(direction) * ball.radius * 2,
+            ball.yPosition + Math.sin(direction) * ball.radius * 2,
+            ball.radius,
+            Math.sin(direction) * speed * 1.05,
+            ball.rSpeed
           );
-
-          if (this.keyboardPaddle) {
-            gradient.addColorStop(0, "#bfffc2");
-            gradient.addColorStop(1, "#008000");
-          } else {
-            gradient.addColorStop(0, "#ffb4b4");
-            gradient.addColorStop(1, "#c00000");
-          }
-
-          ctx.fillStyle = gradient;
-          ctx.fill();
+          newBalls.push(clone);
         }
 
-        keyboardMove(pixels, direction = false) {
-          if (direction && this.keyboardPaddle && (this.yPosition - this.radius > 0)) this.yPosition -= pixels;
-          else if (!direction && this.keyboardPaddle && (this.yPosition + this.radius < canvasHeight)) this.yPosition += pixels;
-        }
-
-        mouseMove(pixels, mousePosition) {
-          if ((this.yPosition - this.radius > mousePosition) && (this.yPosition - this.radius > 0)) this.yPosition -= pixels;
-          else if ((this.yPosition - this.radius < mousePosition) && this.yPosition + this.radius < canvasWidth) this.yPosition += pixels;
-        }
-      }
-
-      // ---------------- CREATE OBJECTS ----------------
-      let balls = [new MatchBall(50, 100, 15, 10, 10, 10 * Math.random())];
-      const paddleRight = new PaddleBall(true);
-      const paddleLeft = new PaddleBall(false);
-
-      let lastCollisionLeft = 0;
-      let lastCollisionRight = 0;
-      const COLLISION_COOLDOWN = 300;
-
-      // ---------------- ANIMATION LOOP ----------------
-      function repeatme() {
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-        for (let b of balls) {
-          b.draw();
-          b.move();
-        }
-
-        paddleRight.draw();
-        paddleLeft.draw();
-
-        collisionDetection();
-
-        window.requestAnimationFrame(repeatme);
-      }
-
-      // ---------------- COLLISION DETECTION ----------------
-      function collisionDetection() {
-        const now = Date.now();
-        let newBalls = [];
-
-        balls.forEach((ball, index) => {
-          const distanceRight = Math.hypot(paddleRight.xPosition - ball.xPosition, paddleRight.yPosition - ball.yPosition);
-          const distanceLeft = Math.hypot(paddleLeft.xPosition - ball.xPosition, paddleLeft.yPosition - ball.yPosition);
-
-          // ---- LEFT PADDLE COLLISION ----
-          if (distanceLeft <= (paddleLeft.radius + ball.radius) && now - lastCollisionLeft > COLLISION_COOLDOWN) {
-            lastCollisionLeft = now;
-
-            const angle = Math.atan2(ball.yPosition - paddleLeft.yPosition, ball.xPosition - paddleLeft.xPosition);
-            ball.xPosition = paddleLeft.xPosition + Math.cos(angle) * (paddleLeft.radius + ball.radius + 1);
-            ball.yPosition = paddleLeft.yPosition + Math.sin(angle) * (paddleLeft.radius + ball.radius + 1);
-
-            ball.xSpeed = Math.abs(ball.xSpeed) * 1.1;
-            ball.rSpeed += (Math.random() - 0.5) * 2;
-            ball.ySpeed += (ball.yPosition - paddleLeft.yPosition) * 0.1;
-
-            ball.setRandomColor();
-            scoreCalculation(1, "red");
-
-            const angleOffset = (Math.random() - 0.5) * 0.5;
-            const speed = Math.hypot(ball.xSpeed, ball.ySpeed);
-            const direction = Math.atan2(ball.ySpeed, ball.xSpeed) + angleOffset;
-            const clone = new MatchBall(
-              ball.xPosition + Math.cos(direction) * ball.radius * 2,
-              ball.yPosition + Math.sin(direction) * ball.radius * 2,
-              ball.radius,
-              Math.cos(direction) * speed * 1.05,
-              Math.sin(direction) * speed * 1.05,
-              ball.rSpeed
-            );
-            newBalls.push(clone);
-          }
-
-          // ---- RIGHT PADDLE COLLISION ----
-          if (distanceRight <= (paddleRight.radius + ball.radius) && now - lastCollisionRight > COLLISION_COOLDOWN) {
-            lastCollisionRight = now;
-
-            const angle = Math.atan2(ball.yPosition - paddleRight.yPosition, ball.xPosition - paddleRight.xPosition);
-            ball.xPosition = paddleRight.xPosition + Math.cos(angle) * (paddleRight.radius + ball.radius + 1);
-            ball.yPosition = paddleRight.yPosition + Math.sin(angle) * (paddleRight.radius + ball.radius + 1);
-
-            ball.xSpeed = -Math.abs(ball.xSpeed) * 1.1;
-            ball.rSpeed += (Math.random() - 0.5) * 2;
-            ball.ySpeed += (ball.yPosition - paddleRight.yPosition) * 0.1;
-
-            ball.setRandomColor();
-            scoreCalculation(1, "green");
-
-            const angleOffset = (Math.random() - 0.5) * 0.5;
-            const speed = Math.hypot(ball.xSpeed, ball.ySpeed);
-            const direction = Math.atan2(ball.ySpeed, ball.xSpeed) + angleOffset;
-            const clone = new MatchBall(
-              ball.xPosition + Math.cos(direction) * ball.radius * 2,
-              ball.yPosition + Math.sin(direction) * ball.radius * 2,
-              ball.radius,
-              Math.cos(direction) * speed * 1.05,
-              Math.sin(direction) * speed * 1.05,
-              ball.rSpeed
-            );
-            newBalls.push(clone);
-          }
-
-          // ---- DELETE ON WALL HIT ----
-          if (ball.xPosition <= ball.radius || ball.xPosition >= canvasWidth - ball.radius) if (balls.length > 1) balls.splice(index, 1);
-        });
-
-        balls.push(...newBalls);
-      }
-
-      function scoreCalculation(type, side) {
-        const elem = side === "red" ? "redScore" : "greenScore";
-        const message = side + (type === 1 ? " scores!" : " loses a point!");
-        document.getElementById(elem).innerText =
-          parseInt(document.getElementById(elem).innerText) + type;
-
-        document.getElementById('touchdown').innerText = message;
-        setTimeout(() => {
-          document.getElementById('touchdown').innerText = "";
-        }, 1000);
-      }
-
-      // Keypresses with jQuery
-      $(document.body).on('keydown', function(e) {
-        switch (e.which) {
-          case 79:
-            pacman.rotate(-1);
-            break;
-          case 80:
-            pacman.rotate(1);
-            break;
-          case 38:
-            paddleRight.keyboardMove(5, true);
-            break;
-          case 40:
-            paddleRight.keyboardMove(5, false);
-            break;
-        }
+        // ---- DELETE ON WALL HIT ----
+        if (ball.xPosition <= ball.radius || ball.xPosition >= canvasWidth - ball.radius) if (balls.length > 1) balls.splice(index, 1);
       });
 
-      // Mouse movement
-      canvas.addEventListener("mousemove", function(event) {
-        let yPosition = event.clientY - canvas.offsetTop;
-        paddleLeft.mouseMove(5, yPosition);
-      });
+      balls.push(...newBalls);
+    }
 
-      // Start animation
-      repeatme();
-    </script>
-  </body>
+    function scoreCalculation(type, side) {
+      const elem = side === "red" ? "redScore" : "greenScore";
+      const message = side + (type === 1 ? " scores!" : " loses a point!");
+      document.getElementById(elem).innerText =
+        parseInt(document.getElementById(elem).innerText) + type;
+
+      document.getElementById('touchdown').innerText = message;
+      setTimeout(() => {
+        document.getElementById('touchdown').innerText = "";
+      }, 1000);
+    }
+
+    // Keypresses with jQuery
+    $(document.body).on('keydown', function (e) {
+      switch (e.which) {
+        case 79:
+          pacman.rotate(-1);
+          break;
+        case 80:
+          pacman.rotate(1);
+          break;
+        case 38:
+          paddleRight.keyboardMove(5, true);
+          break;
+        case 40:
+          paddleRight.keyboardMove(5, false);
+          break;
+      }
+    });
+
+    // Mouse movement
+    canvas.addEventListener("mousemove", function (event) {
+      let yPosition = event.clientY - canvas.offsetTop;
+      paddleLeft.mouseMove(5, yPosition);
+    });
+
+    // Start animation
+    repeatme();
+  </script>
+</body>
+
 </html>
