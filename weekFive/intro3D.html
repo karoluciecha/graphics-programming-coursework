@@ -15,23 +15,41 @@
 <body>
     <h1>Karol Uciecha</h1>
     <script type="text/javascript">
-
+        //I used ChatGPT to help me with this assignment 
         // Scene creation
         var scene = new THREE.Scene();
 
-        // Class to encapsulate the sphere and its properties
+        // Create renderer and set size to full window size
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; // Enable shadow mapping
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Use soft shadows for smoother results
+        document.body.appendChild(renderer.domElement);
+
+        // Create camera: fov 80, aspect ratio window size, near/far clipping planes
+        var camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 50);
+        camera.lookAt(0, 0, 0);
+
+        // ===== SPHERE CLASS =====
         class Sphere {
             constructor(radius, widthSegments, heightSegments, color) {
 
-                // Create geometry and material
+                // Create geometry, material, and mesh for the sphere
                 this.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
                 this.material = new THREE.MeshLambertMaterial({ color: color });
-
-                // Create mesh (sphere)
                 this.mesh = new THREE.Mesh(this.geometry, this.material);
+
+                // Enable shadows
+                this.mesh.castShadow = true;
 
                 // Initial position of the sphere
                 this.mesh.position.set(0, 0, 0);
+
+                // Motion physics
+                this.velocityY = 0;       // current vertical velocity
+                this.gravity = -0.01;     // downward acceleration
+                this.bounceFactor = 0.8;  // energy retained after bounce
             }
 
             // Method to add the sphere to the scene
@@ -41,18 +59,29 @@
 
             // Method to update the sphere's position and rotation
             move() {
-                this.mesh.rotation.x += 0.01;
-                this.mesh.rotation.y += 0.01;
-                this.mesh.position.x -= 0.02;
-                this.mesh.position.y -= 0.01;
+                // Apply gravity
+                this.velocityY += this.gravity;
+                this.mesh.position.y += this.velocityY;
+
+                // Bounce when hitting the plane (y = -10)
+                const floorY = -10 + 10; // plane is at -10, sphere radius is 10
+                if (this.mesh.position.y <= floorY) {
+                    this.mesh.position.y = floorY;
+                    this.velocityY = -this.velocityY * this.bounceFactor;
+                }
+
+                // Slight rotation for realism
+                this.mesh.rotation.x += 0.02;
+                this.mesh.rotation.y += 0.02;
             }
         }
 
-        // Create a new Sphere instance
+        // Create a new Sphere instance and add it to the scene
         const sphere = new Sphere(10, 32, 32, 0xffff00);
+        sphere.addToScene(scene);
 
-        // Add a plane (flat surface) below the sphere
-        const planeGeometry = new THREE.PlaneGeometry(50, 20);
+        // ===== PLANE (GROUND) =====
+        const planeGeometry = new THREE.PlaneGeometry(200, 200);
         const planeMaterial = new THREE.MeshLambertMaterial({ color: 0x999999, shininess: 30 });
         const plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = - Math.PI / 2; // Rotate plane to be horizontal
@@ -60,13 +89,9 @@
         plane.receiveShadow = true; // Enable the plane to receive shadows
         scene.add(plane);
 
-        // Add sphere to the scene
-        sphere.addToScene(scene);
-
-        // Adding a spotlight
-        var spotLight = new THREE.SpotLight(0xffffff);
-        spotLight.position.set(1, 15, 15);
-        spotLight.target = sphere.mesh; // Ensure the spotlight targets the sphere
+        // ===== LIGHTING =====
+        var spotLight = new THREE.SpotLight(0xffffff, 1.2);
+        spotLight.position.set(30, 60, 25);
         spotLight.castShadow = true; // Enable the spotlight to cast shadows
         scene.add(spotLight);
 
@@ -78,20 +103,7 @@
         var ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
         scene.add(ambientLight);
 
-        // Create camera: fov 80, aspect ratio window size, near/far clipping planes
-        var camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-        // Position the camera so it is in front of the sphere
-        camera.position.z = 20;
-
-        // Create renderer and set size to full window size
-        var renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true; // Enable shadow mapping
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Use soft shadows for smoother results
-        document.body.appendChild(renderer.domElement);
-
-        // Animation loop function
+        // ===== ANIMATION LOOP =====
         function repeatMe() {
             // Update the sphere's rotation and position
             sphere.move();
