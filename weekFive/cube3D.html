@@ -51,9 +51,9 @@
 
                 // Physics
                 this.velocity = new THREE.Vector3(
-                (Math.random() - 0.5) * 0.8, // random horizontal motion
-                (Math.random() - 0.5) * 0.8,
-                (Math.random() - 0.5) * 0.8
+                (Math.random() - 0.6), // x-axis velocity
+                (Math.random() - 0.6), // y-axis velocity
+                (Math.random() - 0.6) // z-axis velocity
                 );
                 this.bounceFactor = 0.9;
                 this.rotationSpeed = 0.02;
@@ -70,11 +70,15 @@
                 this.mesh.position.add(this.velocity);
 
                 // Bounce inside cube boundaries
+                // If cubeSize = 100 and radius = 10 → half = 50 - 10 = 40.
+                // Sphere’s center cannot go beyond ±40 along any axis.
                 const half = cubeSize / 2 - this.radius;
+
+                // Loops through each axis (x, y, z) of the 3D space.
                 ["x", "y", "z"].forEach(axis => {
-                if (Math.abs(this.mesh.position[axis]) >= half) {
-                    this.velocity[axis] = -this.velocity[axis] * this.bounceFactor;
-                    this.mesh.position[axis] = Math.sign(this.mesh.position[axis]) * half;
+                if (Math.abs(this.mesh.position[axis]) >= half) { // Example: if x = 41 and half = 40 → sphere hit the +X wall.
+                    this.velocity[axis] = -this.velocity[axis] * this.bounceFactor; // Reverse velocity and apply bounce factor.
+                    this.mesh.position[axis] = Math.sign(this.mesh.position[axis]) * half; // Ensures the sphere doesn’t go past the wall.
                 }
                 });
 
@@ -86,22 +90,22 @@
     // Detect and handle collision with another sphere
       checkCollision(other) {
         const posA = this.mesh.position;
-        const posB = other.mesh.position;
-        const dist = posA.distanceTo(posB);
-        const minDist = this.radius + other.radius;
+        const posB = other.mesh.position; // mesh.position is a THREE.Vector3 object that holds the coordinates of the mesh’s origin in the scene.
+        const dist = posA.distanceTo(posB); // Euclidean distance between the centers of the two spheres
+        const minDist = this.radius + other.radius; // Minimum distance for a collision to occur
 
         if (dist < minDist) {
-          // Reverse both directions
-          this.velocity.x = -this.velocity.x * this.bounceFactor;
-          this.velocity.y = -this.velocity.y * this.bounceFactor;
-          this.velocity.z = -this.velocity.z * this.bounceFactor;
-
-          other.velocity.x = -other.velocity.x * other.bounceFactor;
-          other.velocity.y = -other.velocity.y * other.bounceFactor;
-          other.velocity.z = -other.velocity.z * other.bounceFactor;
+        // Reverse velocities along all axes
+        ["x", "y", "z"].forEach(axis => {
+            this.velocity[axis] = -this.velocity[axis] * this.bounceFactor;
+            other.velocity[axis] = -other.velocity[axis] * other.bounceFactor;
+        });
 
           // Slightly separate them so they don’t stick together
+          // subVectors creates a new vector by subtracting posB from posA
+          // normalize makes it a unit vector (length of 1) keeping only the direction
           const direction = new THREE.Vector3().subVectors(posA, posB).normalize();
+          // Move each sphere away from the collision point along the direction vector
           posA.addScaledVector(direction, 1);
           posB.addScaledVector(direction, -1);
         }
@@ -131,7 +135,6 @@
 
         // ===== ANIMATION LOOP =====
         function repeatMe() {
-            // Move each sphere
             spheres.forEach(s => s.move());
 
             // Collision check between all pairs
@@ -141,14 +144,10 @@
                 }
             }
 
-            // Render the scene from the perspective of the camera
             renderer.render(scene, camera);
 
-            // Call repeatMe again on the next frame
             requestAnimationFrame(repeatMe);
         }
-
-        // Start the animation loop
         repeatMe();
 
         // Optional: Handle resizing so the canvas adjusts when window size changes
