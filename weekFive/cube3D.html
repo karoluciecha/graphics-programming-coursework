@@ -4,10 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <title></title>
-  <style>
-    body { margin: 0; overflow: hidden; background-color: #111; }
-    h1 { text-align: center; color: white; position: absolute; width: 100%; top: 10px; z-index: 1; }
-  </style>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #111;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            position: absolute;
+            width: 100%;
+            top: 10px;
+            z-index: 1;
+        }
+    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
@@ -51,9 +63,9 @@
 
                 // Physics
                 this.velocity = new THREE.Vector3(
-                (Math.random() - 0.6), // x-axis velocity
-                (Math.random() - 0.6), // y-axis velocity
-                (Math.random() - 0.6) // z-axis velocity
+                    (Math.random() - 0.6), // x-axis velocity
+                    (Math.random() - 0.6), // y-axis velocity
+                    (Math.random() - 0.6) // z-axis velocity
                 );
                 this.bounceFactor = 0.9;
                 this.rotationSpeed = 0.02;
@@ -76,41 +88,41 @@
 
                 // Loops through each axis (x, y, z) of the 3D space.
                 ["x", "y", "z"].forEach(axis => {
-                if (Math.abs(this.mesh.position[axis]) >= half) { // Example: if x = 41 and half = 40 → sphere hit the +X wall.
-                    this.velocity[axis] = -this.velocity[axis] * this.bounceFactor; // Reverse velocity and apply bounce factor.
-                    this.mesh.position[axis] = Math.sign(this.mesh.position[axis]) * half; // Ensures the sphere doesn’t go past the wall.
-                }
+                    if (Math.abs(this.mesh.position[axis]) >= half) { // Example: if x = 41 and half = 40 → sphere hit the +X wall.
+                        this.velocity[axis] = -this.velocity[axis] * this.bounceFactor; // Reverse velocity and apply bounce factor.
+                        this.mesh.position[axis] = Math.sign(this.mesh.position[axis]) * half; // Ensures the sphere doesn’t go past the wall.
+                    }
                 });
 
                 // Apply rotation
                 this.mesh.rotation.x += this.rotationSpeed;
                 this.mesh.rotation.y += this.rotationSpeed;
-    }
-    
-    // Detect and handle collision with another sphere
-      checkCollision(other) {
-        const posA = this.mesh.position;
-        const posB = other.mesh.position; // mesh.position is a THREE.Vector3 object that holds the coordinates of the mesh’s origin in the scene.
-        const dist = posA.distanceTo(posB); // Euclidean distance between the centers of the two spheres
-        const minDist = this.radius + other.radius; // Minimum distance for a collision to occur
+            }
 
-        if (dist < minDist) {
-        // Reverse velocities along all axes
-        ["x", "y", "z"].forEach(axis => {
-            this.velocity[axis] = -this.velocity[axis] * this.bounceFactor;
-            other.velocity[axis] = -other.velocity[axis] * other.bounceFactor;
-        });
+            // Detect and handle collision with another sphere
+            checkCollision(other) {
+                const posA = this.mesh.position;
+                const posB = other.mesh.position; // mesh.position is a THREE.Vector3 object that holds the coordinates of the mesh’s origin in the scene.
+                const dist = posA.distanceTo(posB); // Euclidean distance between the centers of the two spheres
+                const minDist = this.radius + other.radius; // Minimum distance for a collision to occur
 
-          // Slightly separate them so they don’t stick together
-          // subVectors creates a new vector by subtracting posB from posA
-          // normalize makes it a unit vector (length of 1) keeping only the direction
-          const direction = new THREE.Vector3().subVectors(posA, posB).normalize();
-          // Move each sphere away from the collision point along the direction vector
-          posA.addScaledVector(direction, 1);
-          posB.addScaledVector(direction, -1);
+                if (dist < minDist) {
+                    // Reverse velocities along all axes
+                    ["x", "y", "z"].forEach(axis => {
+                        this.velocity[axis] = -this.velocity[axis] * this.bounceFactor;
+                        other.velocity[axis] = -other.velocity[axis] * other.bounceFactor;
+                    });
+
+                    // Slightly separate them so they don’t stick together
+                    // subVectors creates a new vector by subtracting posB from posA
+                    // normalize makes it a unit vector (length of 1) keeping only the direction
+                    const direction = new THREE.Vector3().subVectors(posA, posB).normalize();
+                    // Move each sphere away from the collision point along the direction vector
+                    posA.addScaledVector(direction, 1);
+                    posB.addScaledVector(direction, -1);
+                }
+            }
         }
-      }
-}
 
         // Create a new Spheres and add them to the scene
         const spheres = [
@@ -124,10 +136,10 @@
         const cubeSize = 100;
         const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
         const cubeMaterial = new THREE.MeshPhongMaterial({
-        color: 0x6699ff,
-        transparent: true,
-        opacity: 0.2,
-        side: THREE.BackSide // render inside of the cube
+            color: 0x6699ff,
+            transparent: true,
+            opacity: 0.2,
+            side: THREE.BackSide // render inside of the cube
         });
         const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
         cube.receiveShadow = true;
