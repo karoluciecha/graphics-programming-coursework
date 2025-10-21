@@ -34,7 +34,7 @@
         // ===== SPHERE CLASS =====
         class Sphere {
             constructor(radius, widthSegments, heightSegments, color) {
-
+                this.radius = radius;
                 // Create geometry, material, and mesh for the sphere
                 this.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
                 this.material = new THREE.MeshLambertMaterial({ color: color });
@@ -47,9 +47,14 @@
                 this.mesh.position.set(0, 0, 0);
 
                 // Motion physics
-                this.velocityY = 0;       // current vertical velocity
+                this.velocityY = -1;       // current vertical velocity
                 this.gravity = -0.01;     // downward acceleration
-                this.bounceFactor = 0.8;  // energy retained after bounce
+                this.bounceFactor = 0.9;  // energy retained after bounce
+
+                // Rotation control
+                this.rotationSpeed = 0.02;   // base rotation speed
+                this.minVelocity = 0.002;    // threshold below which motion stops
+                this.isMoving = true;
             }
 
             // Method to add the sphere to the scene
@@ -59,22 +64,32 @@
 
             // Method to update the sphere's position and rotation
             move() {
+                if (!this.isMoving) return;
+
                 // Apply gravity
                 this.velocityY += this.gravity;
                 this.mesh.position.y += this.velocityY;
 
-                // Bounce when hitting the plane (y = -10)
-                const floorY = -10 + 10; // plane is at -10, sphere radius is 10
+                // Bounce when hitting the plane
+                const floorY = plane.position.y + this.radius;
                 if (this.mesh.position.y <= floorY) {
                     this.mesh.position.y = floorY;
                     this.velocityY = -this.velocityY * this.bounceFactor;
+                    this.rotationSpeed *= this.bounceFactor;
                 }
 
-                // Slight rotation for realism
-                this.mesh.rotation.x += 0.02;
-                this.mesh.rotation.y += 0.02;
-            }
+                // Apply rotation (slows over time)
+                this.mesh.rotation.x += this.rotationSpeed;
+                this.mesh.rotation.y += this.rotationSpeed;
+                
+                // Stop motion when velocity & rotation are very small
+                if (Math.abs(this.velocityY) < this.minVelocity && this.mesh.position.y <= floorY + 0.001) {
+                this.isMoving = false;
+                this.velocityY = 0;
+                this.rotationSpeed = 0;
         }
+    }
+}
 
         // Create a new Sphere instance and add it to the scene
         const sphere = new Sphere(10, 32, 32, 0xffff00);
@@ -85,7 +100,7 @@
         const planeMaterial = new THREE.MeshLambertMaterial({ color: 0x999999, shininess: 30 });
         const plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = - Math.PI / 2; // Rotate plane to be horizontal
-        plane.position.y = -10; // Move it below the sphere
+        plane.position.y = -25; // Move it below the sphere
         plane.receiveShadow = true; // Enable the plane to receive shadows
         scene.add(plane);
 
