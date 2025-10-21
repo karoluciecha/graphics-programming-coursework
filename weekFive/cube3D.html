@@ -54,12 +54,17 @@
         class Sphere {
             constructor(radius, color, startX, startY, startZ) {
                 this.radius = radius;
-                // Create geometry, material, and mesh for the sphere
+                // Main mesh
                 this.geometry = new THREE.SphereGeometry(radius, 32, 32);
                 this.material = new THREE.MeshLambertMaterial({ color: color });
                 this.mesh = new THREE.Mesh(this.geometry, this.material);
                 this.mesh.castShadow = true; // Enable shadow casting for the sphere
                 this.mesh.position.set(startX, startY, startZ); // Initial position
+
+                // Wireframe mesh
+                const wireMaterial = new THREE.MeshBasicMaterial({ color: color * -1, wireframe: true });
+                const wireMesh = new THREE.Mesh(this.geometry, wireMaterial);
+                this.mesh.add(wireMesh); // attach wireframe to main mesh
 
                 // Physics
                 this.velocity = new THREE.Vector3(
