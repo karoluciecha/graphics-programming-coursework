@@ -79,41 +79,41 @@
                 // Apply rotation (slows over time)
                 this.mesh.rotation.x += this.rotationSpeed;
                 this.mesh.rotation.y += this.rotationSpeed;
-                
+
                 // Stop motion when velocity & rotation are very small
                 if (Math.abs(this.velocityY) < this.minVelocity && this.mesh.position.y <= floorY + 0.001) {
-                this.isMoving = false;
-                this.velocityY = 0;
-                this.rotationSpeed = 0;
-        }
-    }
-    // Detect and handle collision with another sphere
-    checkCollision(other) {
-        const posA = this.mesh.position;
-        const posB = other.mesh.position;
-        const dist = posA.distanceTo(posB);
-        const minDist = this.radius + other.radius;
-
-        if (dist < minDist) {
-            // Simple elastic collision effect: reverse velocities
-            const overlap = (minDist - dist) / 2;
-
-            // Move both spheres apart along Y-axis for simplicity
-            if (posA.y > posB.y) {
-                posA.y += overlap;
-                posB.y -= overlap;
-            } else {
-                posA.y -= overlap;
-                posB.y += overlap;
+                    this.isMoving = false;
+                    this.velocityY = 0;
+                    this.rotationSpeed = 0;
+                }
             }
+            // Detect and handle collision with another sphere
+            checkCollision(other) {
+                const posA = this.mesh.position;
+                const posB = other.mesh.position;
+                const dist = posA.distanceTo(posB);
+                const minDist = this.radius + other.radius;
 
-            // Exchange or reverse vertical velocities
-            const tempVel = this.velocityY;
-            this.velocityY = -other.velocityY * this.bounceFactor;
-            other.velocityY = -tempVel * other.bounceFactor;
+                if (dist < minDist) {
+                    // Simple elastic collision effect: reverse velocities
+                    const overlap = (minDist - dist) / 2;
+
+                    // Move both spheres apart along Y-axis for simplicity
+                    if (posA.y > posB.y) {
+                        posA.y += overlap;
+                        posB.y -= overlap;
+                    } else {
+                        posA.y -= overlap;
+                        posB.y += overlap;
+                    }
+
+                    // Exchange or reverse vertical velocities
+                    const tempVel = this.velocityY;
+                    this.velocityY = -other.velocityY * this.bounceFactor;
+                    other.velocityY = -tempVel * other.bounceFactor;
+                }
+            }
         }
-    }
-}
 
         // Create a new Spheres and add them to the scene
         const spheres = [

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+  <style>
+    body { margin: 0; overflow: hidden; background-color: #111; }
+    h1 { text-align: center; color: white; position: absolute; width: 100%; top: 10px; z-index: 1; }
+  </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+    <h1>Karol Uciecha</h1>
+    <script type="text/javascript">
+
+        // Scene creation
+        const scene = new THREE.Scene();
+
+        // Create renderer and set size to full window size
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; // Enable shadow mapping
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Use soft shadows for smoother results
+        document.body.appendChild(renderer.domElement);
+
+        // Create camera: fov 80, aspect ratio window size, near/far clipping planes
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(60, 60, 80);
+        camera.lookAt(0, 0, 0);
+
+        // ===== SPHERE CLASS =====
+        class Sphere {
+            constructor(radius, color, startX, startY, startZ) {
+                this.radius = radius;
+                // Create geometry, material, and mesh for the sphere
+                this.geometry = new THREE.SphereGeometry(radius, 32, 32);
+                this.material = new THREE.MeshLambertMaterial({ color: color });
+                this.mesh = new THREE.Mesh(this.geometry, this.material);
+                this.mesh.castShadow = true; // Enable shadow casting for the sphere
+                this.mesh.position.set(startX, startY, startZ); // Initial position
+
+                // Physics
+                this.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.8, // random horizontal motion
+                (Math.random() - 0.5) * 0.8,
+                (Math.random() - 0.5) * 0.8
+                );
+                this.bounceFactor = 0.9;
+                this.rotationSpeed = 0.02;
+            }
+
+            // Method to add the sphere to the scene
+            addToScene(scene) {
+                scene.add(this.mesh);
+            }
+
+            // Method to update the sphere's position and rotation
+            move() {
+                // Update position based on velocity
+                this.mesh.position.add(this.velocity);
+
+                // Bounce inside cube boundaries
+                const half = cubeSize / 2 - this.radius;
+                if (Math.abs(this.mesh.position.x) >= half) {
+                this.velocity.x = -this.velocity.x * this.bounceFactor;
+                this.mesh.position.x = Math.sign(this.mesh.position.x) * half;
+                }
+                if (Math.abs(this.mesh.position.y) >= half) {
+                this.velocity.y = -this.velocity.y * this.bounceFactor;
+                this.mesh.position.y = Math.sign(this.mesh.position.y) * half;
+                }
+                if (Math.abs(this.mesh.position.z) >= half) {
+                this.velocity.z = -this.velocity.z * this.bounceFactor;
+                this.mesh.position.z = Math.sign(this.mesh.position.z) * half;
+                }
+
+                // Apply rotation (slows over time)
+                this.mesh.rotation.x += this.rotationSpeed;
+                this.mesh.rotation.y += this.rotationSpeed;
+    }
+    
+    // Detect and handle collision with another sphere
+    checkCollision(other) {
+        const posA = this.mesh.position;
+        const posB = other.mesh.position;
+        const dist = posA.distanceTo(posB);
+        const minDist = this.radius + other.radius;
+
+        if (dist < minDist) {
+            // Simple elastic collision effect: reverse velocities
+            const overlap = (minDist - dist) / 2;
+
+            // Move both spheres apart along Y-axis for simplicity
+            if (posA.y > posB.y) {
+                posA.y += overlap;
+                posB.y -= overlap;
+            } else {
+                posA.y -= overlap;
+                posB.y += overlap;
+            }
+
+            // Exchange or reverse vertical velocities
+            const tempVel = this.velocityY;
+            this.velocityY = -other.velocityY * this.bounceFactor;
+            other.velocityY = -tempVel * other.bounceFactor;
+        }
+    }
+}
+
+        // Create a new Spheres and add them to the scene
+        const spheres = [
+            new Sphere(5, 0xffff00, -25, 15),
+            new Sphere(5, 0x00ffcc, 25, 30)
+        ];
+
+        spheres.forEach(s => s.addToScene(scene));
+
+        // ===== TRANSPARENT CUBE =====
+        const cubeSize = 100;
+        const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+        const cubeMaterial = new THREE.MeshPhongMaterial({
+        color: 0x6699ff,
+        transparent: true,
+        opacity: 0.2,
+        side: THREE.BackSide // render inside of the cube
+        });
+        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        cube.receiveShadow = true;
+        scene.add(cube);
+
+        // ===== LIGHTING =====
+        var spotLight = new THREE.SpotLight(0xffffff, 1.2);
+        spotLight.position.set(50, 100, 50);
+        spotLight.castShadow = true; // Enable the spotlight to cast shadows
+        scene.add(spotLight);
+
+        // Optionally add an ambient light to prevent dark shadows
+        var ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+        scene.add(ambientLight);
+
+        // ===== ANIMATION LOOP =====
+        function repeatMe() {
+            // Move each sphere
+            spheres.forEach(s => s.move());
+
+            // Collision check between all pairs
+            for (let i = 0; i < spheres.length; i++) {
+                for (let j = i + 1; j < spheres.length; j++) {
+                    spheres[i].checkCollision(spheres[j]);
+                }
+            }
+
+            // Render the scene from the perspective of the camera
+            renderer.render(scene, camera);
+
+            // Call repeatMe again on the next frame
+            requestAnimationFrame(repeatMe);
+        }
+
+        // Start the animation loop
+        repeatMe();
+
+        // Optional: Handle resizing so the canvas adjusts when window size changes
+        window.addEventListener('resize', function () {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+
+</html>
