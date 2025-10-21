@@ -15,28 +15,28 @@
 <body>
     <h1>Karol Uciecha</h1>
     <script type="text/javascript">
-        //I used ChatGPT to help me with this assignment 
+
         // Scene creation
-        var scene = new THREE.Scene();
+        const scene = new THREE.Scene();
 
         // Create renderer and set size to full window size
-        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true; // Enable shadow mapping
         renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Use soft shadows for smoother results
         document.body.appendChild(renderer.domElement);
 
         // Create camera: fov 80, aspect ratio window size, near/far clipping planes
-        var camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(0, 5, 50);
         camera.lookAt(0, 0, 0);
 
         // ===== SPHERE CLASS =====
         class Sphere {
-            constructor(radius, widthSegments, heightSegments, color) {
+            constructor(radius, color, startX, startY) {
                 this.radius = radius;
                 // Create geometry, material, and mesh for the sphere
-                this.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+                this.geometry = new THREE.SphereGeometry(radius, 32, 32);
                 this.material = new THREE.MeshLambertMaterial({ color: color });
                 this.mesh = new THREE.Mesh(this.geometry, this.material);
 
@@ -44,16 +44,14 @@
                 this.mesh.castShadow = true;
 
                 // Initial position of the sphere
-                this.mesh.position.set(0, 0, 0);
+                this.mesh.position.set(startX, startY, 0);
 
-                // Motion physics
-                this.velocityY = -1;       // current vertical velocity
-                this.gravity = -0.01;     // downward acceleration
-                this.bounceFactor = 0.9;  // energy retained after bounce
-
-                // Rotation control
-                this.rotationSpeed = 0.02;   // base rotation speed
-                this.minVelocity = 0.002;    // threshold below which motion stops
+                // Physics
+                this.velocityY = -0.5 - Math.random() * 0.5; // current vertical velocity
+                this.gravity = -0.01; // downward acceleration
+                this.bounceFactor = 0.9; // energy retained after bounce
+                this.rotationSpeed = 0.02; // base rotation speed
+                this.minVelocity = 0.002; // threshold below which motion stops
                 this.isMoving = true;
             }
 
@@ -89,11 +87,41 @@
                 this.rotationSpeed = 0;
         }
     }
+    // Detect and handle collision with another sphere
+    checkCollision(other) {
+        const posA = this.mesh.position;
+        const posB = other.mesh.position;
+        const dist = posA.distanceTo(posB);
+        const minDist = this.radius + other.radius;
+
+        if (dist < minDist) {
+            // Simple elastic collision effect: reverse velocities
+            const overlap = (minDist - dist) / 2;
+
+            // Move both spheres apart along Y-axis for simplicity
+            if (posA.y > posB.y) {
+                posA.y += overlap;
+                posB.y -= overlap;
+            } else {
+                posA.y -= overlap;
+                posB.y += overlap;
+            }
+
+            // Exchange or reverse vertical velocities
+            const tempVel = this.velocityY;
+            this.velocityY = -other.velocityY * this.bounceFactor;
+            other.velocityY = -tempVel * other.bounceFactor;
+        }
+    }
 }
 
-        // Create a new Sphere instance and add it to the scene
-        const sphere = new Sphere(10, 32, 32, 0xffff00);
-        sphere.addToScene(scene);
+        // Create a new Spheres and add them to the scene
+        const spheres = [
+            new Sphere(5, 0xffff00, -25, 15),
+            new Sphere(5, 0x00ffcc, 25, 30)
+        ];
+
+        spheres.forEach(s => s.addToScene(scene));
 
         // ===== PLANE (GROUND) =====
         const planeGeometry = new THREE.PlaneGeometry(200, 200);
@@ -120,8 +148,15 @@
 
         // ===== ANIMATION LOOP =====
         function repeatMe() {
-            // Update the sphere's rotation and position
-            sphere.move();
+            // Move each sphere
+            spheres.forEach(s => s.move());
+
+            // Collision check between all pairs
+            for (let i = 0; i < spheres.length; i++) {
+                for (let j = i + 1; j < spheres.length; j++) {
+                    spheres[i].checkCollision(spheres[j]);
+                }
+            }
 
             // Render the scene from the perspective of the camera
             renderer.render(scene, camera);
